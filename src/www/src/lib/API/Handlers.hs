@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module API.Handlers where
 
@@ -11,12 +12,12 @@ import DB.ItemRepo (
   getItemById,
   updateItem,
  )
-import Data.Text qualified as T
 import Effects.Error (AppError (..), throwNotFound)
 import Effects.Logger (Logger, logInfo)
 import Model.Types (Item, NewItem)
 import Polysemy (Sem, Members)
 import Polysemy.Error (Error)
+import Data.String.Interpolate (i)
 
 type IsHandler r = Members '[ItemRepo, Logger, Error AppError] r
 
@@ -28,10 +29,10 @@ handleGetAll = do
 
 handleGetOne :: IsHandler r => Int -> Sem r (ApiResponse Item)
 handleGetOne itemId = do
-  logInfo $ "GET /items/" <> T.pack (show itemId)
+  logInfo [i|GET /items/#{itemId}|]
   mItem <- getItemById itemId
   case mItem of
-    Nothing -> throwNotFound $ "Item " <> T.pack (show itemId) <> " not found"
+    Nothing -> throwNotFound [i|Item #{itemId} not found|]
     Just item -> pure (ok item)
 
 handleCreate :: Members '[ItemRepo, Logger] r => NewItem -> Sem r (ApiResponse Item)
@@ -43,16 +44,16 @@ handleCreate body = do
 handleUpdate
   :: IsHandler r => Int -> NewItem -> Sem r (ApiResponse Item)
 handleUpdate itemId body = do
-  logInfo $ "PUT /items/" <> T.pack (show itemId)
+  logInfo [i|PUT /items/#{itemId}|]
   mItem <- updateItem itemId body
   case mItem of
-    Nothing -> throwNotFound $ "Item " <> T.pack (show itemId) <> " not found"
+    Nothing -> throwNotFound [i|Item #{itemId} not found|]
     Just item -> pure (ok item)
 
 handleDelete :: IsHandler r => Int -> Sem r (ApiResponse Bool)
 handleDelete itemId = do
-  logInfo $ "DELETE /items/" <> T.pack (show itemId)
+  logInfo [i|DELETE /items/#{itemId}|]
   deleted <- deleteItem itemId
   if deleted
     then pure (ok True)
-    else throwNotFound $ "Item " <> T.pack (show itemId) <> " not found"
+    else throwNotFound [i|Item #{itemId} not found|]

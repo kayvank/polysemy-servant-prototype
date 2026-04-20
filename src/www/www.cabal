@@ -36,9 +36,10 @@ common project-config
   ghc-options:
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
-    -ddump-splices -threaded -fno-warn-name-shadowing
+    -threaded -fno-warn-name-shadowing
     -fplugin=Polysemy.Plugin -rtsopts -with-rtsopts=-N
 
+-- -ddump-splices
 -- -ddump-deriv
 
 library
@@ -62,6 +63,7 @@ library
     , servant-server
     , sqlite-simple
     , text
+    , string-interpolate
 
   hs-source-dirs:   src/lib
   default-language: GHC2021
