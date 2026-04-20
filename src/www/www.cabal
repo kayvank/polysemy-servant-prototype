@@ -37,7 +37,7 @@ common project-config
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
     -ddump-splices -threaded -fno-warn-name-shadowing
-    -fplugin=Polysemy.Plugin
+    -fplugin=Polysemy.Plugin -rtsopts -with-rtsopts=-N
 
 -- -ddump-deriv
 
