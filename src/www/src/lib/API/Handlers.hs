@@ -23,13 +23,11 @@ type IsHandler r = Members '[ItemRepo, Logger, Error AppError] r
 
 handleGetAll :: Members '[ItemRepo, Logger] r => Sem r (ApiResponse [Item])
 handleGetAll = do
-  logInfo "GET /items"
   items <- getAllItems
   pure (ok items)
 
 handleGetOne :: IsHandler r => Int -> Sem r (ApiResponse Item)
 handleGetOne itemId = do
-  logInfo [i|GET /items/#{itemId}|]
   mItem <- getItemById itemId
   case mItem of
     Nothing -> throwNotFound [i|Item #{itemId} not found|]
@@ -37,14 +35,12 @@ handleGetOne itemId = do
 
 handleCreate :: Members '[ItemRepo, Logger] r => NewItem -> Sem r (ApiResponse Item)
 handleCreate body = do
-  logInfo "POST /items"
   item <- createItem body
   pure (ok item)
 
 handleUpdate
   :: IsHandler r => Int -> NewItem -> Sem r (ApiResponse Item)
 handleUpdate itemId body = do
-  logInfo [i|PUT /items/#{itemId}|]
   mItem <- updateItem itemId body
   case mItem of
     Nothing -> throwNotFound [i|Item #{itemId} not found|]
@@ -52,7 +48,6 @@ handleUpdate itemId body = do
 
 handleDelete :: IsHandler r => Int -> Sem r (ApiResponse Bool)
 handleDelete itemId = do
-  logInfo [i|DELETE /items/#{itemId}|]
   deleted <- deleteItem itemId
   if deleted
     then pure (ok True)

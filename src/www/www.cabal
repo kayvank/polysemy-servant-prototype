@@ -81,6 +81,7 @@ executable www
     , servant-server
     , warp
     , www
+    , wai-extra
 
   hs-source-dirs: src/bin
 
