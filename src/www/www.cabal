@@ -89,7 +89,7 @@ test-suite www-test
   -- other-extensions:
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
-  main-is:        Specs.hs
+  main-is:        Spec.hs
 
   -- other-modules:  Tests.NaiveSpecs
   build-depends:
