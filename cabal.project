@@ -1,0 +1,9 @@
+packages: ./src/www
+
+-- Required for Polysemy's type-level magic
+package polysemy
+  flags: +use-template-haskell
+
+-- GHC plugin for Polysemy (removes the need for manual type annotations)
+package myapp
+  ghc-options: -fplugin=Polysemy.Plugin

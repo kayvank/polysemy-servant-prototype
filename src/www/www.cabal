@@ -1,0 +1,101 @@
+cabal-version:   3.4
+name:            www
+version:         0.1.0.0
+
+-- synopsis:
+-- description:
+license:         BSD-3-Clause
+license-file:    LICENSE
+
+-- author:
+-- maintainer:
+-- copyright:
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+-- extra-source-files:
+common base
+  build-depends: base >=4.9 && <5
+
+common project-config
+  default-language:   GHC2021
+  default-extensions:
+    DataKinds
+    DeriveGeneric
+    FlexibleContexts
+    GADTs
+    LambdaCase
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    TemplateHaskell
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -ddump-splices -threaded -fno-warn-name-shadowing
+    -fplugin=Polysemy.Plugin
+
+-- -ddump-deriv
+
+library
+  import:           base,project-config
+  exposed-modules:
+    API.Handlers
+    API.Routes
+    API.Types
+    DB.ItemRepo
+    DB.Schema
+    Effects.Config
+    Effects.Error
+    Effects.Logger
+    Model.Types
+
+  build-depends:
+    , aeson
+    , data-default
+    , polysemy
+    , polysemy-plugin
+    , servant-server
+    , sqlite-simple
+    , text
+
+  hs-source-dirs:   src/lib
+  default-language: GHC2021
+
+executable www
+  import:         base,project-config
+  main-is:        Main.hs
+
+  -- other-modules:
+  -- other-extensions:
+  build-depends:
+    , data-default
+    , polysemy
+    , polysemy-plugin
+    , servant-server
+    , warp
+    , www
+
+  hs-source-dirs: src/bin
+
+test-suite www-test
+  import:         base,project-config
+
+  -- other-modules:
+  -- other-extensions:
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        Specs.hs
+
+  -- other-modules:  Tests.NaiveSpecs
+  build-depends:
+    , hspec
+    , polysemy
+    , polysemy-plugin
+    , tasty
+    , tasty-hspec
+    , www

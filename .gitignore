@@ -1,0 +1,43 @@
+# Created by https://www.toptal.com/developers/gitignore/api/haskell
+# Edit at https://www.toptal.com/developers/gitignore?templates=haskell
+
+### Haskell ###
+dist
+dist-*
+cabal-dev
+*.o
+*.hi
+*.hie
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+*.eventlog
+cabal.project.local
+cabal.project.local~
+.HTF/
+.ghc.environment.*
+
+var/
+## direnv
+.direnv/
+
+## local dev
+.db/
+
+## cabal
+## keep the global CABAL_DIR clean
+.cabal/
+
+## pre-commit-hook
+.pre-commit*
+
+# test/run temp files
+*.log
+tmp/
+var/
+
+# emacs
+.projectile
+
+# End of https://www.toptal.com/developers/gitignore/api/haskell
