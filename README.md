@@ -11,13 +11,13 @@ cabal update && cabal build all
 cabal run www
 ```
 # How do I test it
-Create a subdirectory `.db`
+Create a sub directory `.db`
 
 ``` sh
 mkdir ./.db
 ```
 
-If you're using emacs [ReSt](https://github.com/pashky/restclient.el) client, use [http-tests.http](http-tests.http)
+If you're using emacs [ReSt](https://github.com/pashky/restclient.el) client, use [http-tests.http](./src/www/int-test/http-tests.http)
 
 Or you may use curl:
 
