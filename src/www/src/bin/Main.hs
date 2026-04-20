@@ -10,11 +10,13 @@ import Effects.Config (
   AppConfig (configAppName, configDbPath, configPort),
   defaultConfig,
  )
+import qualified Network.Wai.Middleware.RequestLogger as Logger
 
 main :: IO ()
 main = do
+  -- TODO: resource-pool
   conn <- openDb def
 
   Network.Wai.Handler.Warp.run
     (configPort def)
-    (serve api (server conn))
+    (Logger.logStdout (serve api (server conn)))

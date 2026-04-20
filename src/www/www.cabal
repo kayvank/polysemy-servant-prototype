@@ -37,7 +37,7 @@ common project-config
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
     -threaded -fno-warn-name-shadowing
-    -fplugin=Polysemy.Plugin -rtsopts -with-rtsopts=-N
+    -rtsopts -with-rtsopts=-N
 
 -- -ddump-splices
 -- -ddump-deriv
@@ -59,7 +59,6 @@ library
     , aeson
     , data-default
     , polysemy
-    , polysemy-plugin
     , servant-server
     , sqlite-simple
     , text
@@ -76,8 +75,6 @@ executable www
   -- other-extensions:
   build-depends:
     , data-default
-    , polysemy
-    , polysemy-plugin
     , servant-server
     , warp
     , www
@@ -98,7 +95,6 @@ test-suite www-test
   build-depends:
     , hspec
     , polysemy
-    , polysemy-plugin
     , tasty
     , tasty-hspec
     , www
