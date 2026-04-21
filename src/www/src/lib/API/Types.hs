@@ -4,7 +4,11 @@
 Module      : API.Types
 Description : Common types for API responses
 -}
-module API.Types where
+module API.Types (
+  ApiResponse (..),
+  ok,
+  err,
+) where
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
@@ -25,4 +29,4 @@ ok :: a -> ApiResponse a
 ok x = ApiResponse True (Just x) "OK"
 
 err :: Text -> ApiResponse ()
-err msg = ApiResponse False Nothing msg
+err = ApiResponse False Nothing

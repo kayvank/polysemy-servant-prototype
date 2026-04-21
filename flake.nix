@@ -50,7 +50,7 @@
             hooks = {
               cabal-fmt.enable = true;
               fourmolu.enable = true;
-              nixfmt-rfc-style.enable = true;
+              nixfmt.enable = true;
             };
           };
 

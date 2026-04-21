@@ -5,7 +5,13 @@
 Module      : API.Handlers
 Description : Handlers for API endpoints
 -}
-module API.Handlers where
+module API.Handlers (
+  handleGetAll,
+  handleGetOne,
+  handleCreate,
+  handleUpdate,
+  handleDelete,
+) where
 
 import API.Types (ApiResponse (..), ok)
 import DB.ItemRepo (
@@ -26,9 +32,7 @@ import Polysemy.Error (Error)
 type IsHandler r = Members '[ItemRepo, Logger, Error AppError] r
 
 handleGetAll :: (Members '[ItemRepo, Logger] r) => Sem r (ApiResponse [Item])
-handleGetAll = do
-  items <- getAllItems
-  pure (ok items)
+handleGetAll = ok <$> getAllItems
 
 handleGetOne :: (IsHandler r) => Int -> Sem r (ApiResponse Item)
 handleGetOne itemId = do

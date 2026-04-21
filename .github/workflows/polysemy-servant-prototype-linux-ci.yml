@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - './**'
+      - '**'
       - '.github/workflows/polysemy-servant-prototype-linux-ci.yml'
 
   pull_request:
