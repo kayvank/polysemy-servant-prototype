@@ -1,0 +1,30 @@
+name: Check Fourmolu formatting
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - './**'
+      - '.github/workflows/polysemy-servant-prototype-fourmolu-ci.yml'
+
+  pull_request:
+    branches: [ "**" ]
+    paths:
+      - './**'
+      - '.github/workflows/polysemy-servant-prototype-fourmolu-ci.yml'
+
+jobs:
+  fourmolu-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Fourmolu check
+        uses: haskell-actions/run-fourmolu@v9
+        with:
+          version: "latest"
+          pattern: |
+            src/**/*.hs
