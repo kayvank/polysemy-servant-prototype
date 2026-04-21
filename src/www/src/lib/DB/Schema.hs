@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{- |
+Module      : DB.Schema
+Description : Database schema initialization
+-}
 module DB.Schema where
 
-import Data.Text (Text)
 import Data.Text qualified as T
-import Database.SQLite.Simple
-import Database.SQLite.Simple.FromRow
+import Database.SQLite.Simple (Connection, execute_, open)
 import Effects.Config (AppConfig (..))
-import Model.Types
 
 -- | Open a connection using config
 openDb :: AppConfig -> IO Connection

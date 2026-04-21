@@ -1,5 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{- |
+Module      : Effects.Config
+Description : Configuration effect and pure interpreter
+-}
 module Effects.Config where
 
 import Data.Default (Default (..))

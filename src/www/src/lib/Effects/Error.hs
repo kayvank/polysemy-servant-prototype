@@ -1,3 +1,7 @@
+{- |
+Module      : Effects.Error
+Description : Error handling effect and domain error types
+-}
 module Effects.Error where
 
 import Data.Aeson (FromJSON, ToJSON)

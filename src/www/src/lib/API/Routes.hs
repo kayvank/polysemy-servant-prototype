@@ -1,6 +1,11 @@
-{-# LANGUAGE OverloadedStrings #-}
-
-module API.Routes where
+{- |
+Module      : API.Routes
+Description : Route definitions and server implementation
+-}
+module API.Routes (
+  api,
+  server,
+) where
 
 import API.Handlers (
   handleCreate,

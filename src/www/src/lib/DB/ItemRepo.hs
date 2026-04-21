@@ -1,5 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{- |
+Module      : DB.ItemRepo
+Description : Repository effect and SQLite interpreter
+-}
 module DB.ItemRepo where
 
 import Database.SQLite.Simple (

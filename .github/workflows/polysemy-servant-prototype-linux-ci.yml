@@ -1,0 +1,133 @@
+name: Haskell build and test
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**'
+      - '.github/workflows/polysemy-servant-prototype-linux-ci.yml'
+
+  pull_request:
+    branches: [ "**" ]
+    paths:
+      - '**'
+      - '.github/workflows/polysemy-servant-prototype-linux-ci.yml'
+
+jobs:
+  build:
+    name: GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        ghc-version: ['9.10.3']
+      fail-fast: false
+
+    env:
+      # Modify this value to "invalidate" the cabal cache.
+      CABAL_CACHE_VERSION: "2026-04-21"
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # <— needed if you pin to specific commits/tags
+
+      - name: Free up disk space
+        run: |
+          sudo rm -rf \
+            "$AGENT_TOOLSDIRECTORY" \
+            /opt/google/chrome \
+            /opt/microsoft/msedge \
+            /opt/microsoft/powershell \
+            /opt/pipx \
+            /usr/lib/mono \
+            /usr/local/julia* \
+            /usr/local/lib/android \
+            /usr/local/lib/node_modules \
+            /usr/local/share/chromium \
+            /usr/local/share/powershell \
+            /usr/share/dotnet \
+            /usr/share/swift
+          df -h /
+
+      - name: Install Haskell
+        id: install-haskell
+        uses: input-output-hk/actions/haskell@latest
+        with:
+          ghc-version: ${{ matrix.ghc-version }}
+          cabal-version: 3.12.1.0
+
+      - name: Cabal update
+        working-directory: .
+        run: cabal update
+
+        # We create a dependencies.txt file that can be used to index the cabal
+        # store cache.
+        #
+        # We do not use plan.json directly because adding a dependency to our
+        # Cabal files which was already present somewhere else would result in a
+        # different plan, even though the set of dependencies is the same.
+      - name: Record dependencies to be used as cache keys
+        working-directory: .
+        id: record-deps
+        run: |
+          cabal build all --enable-tests --dry-run --minimize-conflict-set
+          cat dist-newstyle/cache/plan.json \
+          | jq '.["install-plan"][].id' \
+          | sort \
+          | uniq \
+          | tee dependencies.txt
+
+      - name: Restore cache
+        uses: actions/cache/restore@v4
+        id: restore-cabal-cache
+        env:
+          cache-name: cache-cabal-build
+        with:
+          path: |
+            ${{ steps.install-haskell.outputs.cabal-store }}
+          # A new cache is created upon a change to the cabal build plan,
+          # cabal.project (and/or cabal.project.local), or a bump to
+          # CABAL_CACHE_VERSION.
+          key: ${{ env.cache-name }}-${{ runner.os }}-${{ matrix.ghc-version }}-${{ env.CABAL_CACHE_VERSION }}-${{ hashFiles('dependencies.txt') }}-${{ hashFiles('cabal.project*') }}
+          # Restoring attempts are from current branch then master. The key above
+          # is by default already a restore-key.
+          restore-keys: |
+            ${{ env.cache-name }}-${{ runner.os }}-${{ matrix.ghc-version }}-${{ env.CABAL_CACHE_VERSION }}-${{ hashFiles('dependencies.txt') }}
+            ${{ env.cache-name }}-${{ runner.os }}-${{ matrix.ghc-version }}-${{ env.CABAL_CACHE_VERSION }}-
+
+      - name: Install build tools and helpers
+        run: |
+          cabal install doctest --flag cabal-doctest --ignore-project --overwrite-policy=always
+          cabal path --installdir >> "$GITHUB_PATH"
+
+      - name: Check workflow test matrix
+        working-directory: .
+        run: cabal build all --dry-run
+
+      - name: Build dependencies
+        working-directory: .
+        id: build-dependencies
+        run: cabal build all --only-dependencies
+
+      - name: Save cache
+        uses: actions/cache/save@v4
+        id: save-cabal-cache
+        # Note: cache-hit will be set to true only when cache hit occurs for the
+        # exact key match. For a partial key match via restore-keys or a cache
+        # miss, it will be set to false.
+        if: steps.build-dependencies.outcome == 'success' && steps.restore-cabal-cache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ steps.install-haskell.outputs.cabal-store }}
+          key:  ${{ steps.restore-cabal-cache.outputs.cache-primary-key }}
+
+      - name: Build
+        working-directory: .
+        run: cabal build all
+
+      - name: Test
+        working-directory: .
+        run: cabal test all

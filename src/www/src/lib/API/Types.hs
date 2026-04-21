@@ -1,41 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module API.Types where
+{- |
+Module      : API.Types
+Description : Common types for API responses
+-}
+module API.Types (
+  ApiResponse (..),
+  ok,
+  err,
+) where
 
-import Data.Aeson (
-  FromJSON (parseJSON),
-  KeyValue ((.=)),
-  ToJSON (toJSON),
-  object,
-  withObject,
-  (.!=),
-  (.:),
-  (.:?),
- )
+import Data.Aeson (FromJSON, ToJSON)
 import Data.Text (Text)
 import GHC.Generics (Generic)
-import Model.Types (Item (Item), NewItem (NewItem))
-
--- | JSON for Item
-instance ToJSON Item where
-  toJSON (Item i n d) =
-    object
-      [ "id" .= i
-      , "name" .= n
-      , "desc" .= d
-      ]
-
-instance FromJSON Item where
-  parseJSON = withObject "Item" $ \v ->
-    Item <$> v .: "id" <*> v .: "name" <*> v .: "desc"
-
--- | JSON for NewItem (request body)
-instance ToJSON NewItem where
-  toJSON (NewItem n d) = object ["name" .= n, "desc" .= d]
-
-instance FromJSON NewItem where
-  parseJSON = withObject "NewItem" $ \v ->
-    NewItem <$> v .: "name" <*> v .:? "desc" .!= ""
 
 -- | Generic API response envelope
 data ApiResponse a = ApiResponse
@@ -52,4 +29,4 @@ ok :: a -> ApiResponse a
 ok x = ApiResponse True (Just x) "OK"
 
 err :: Text -> ApiResponse ()
-err msg = ApiResponse False Nothing msg
+err = ApiResponse False Nothing
