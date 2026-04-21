@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module API.Handlers where
 
@@ -11,45 +12,43 @@ import DB.ItemRepo (
   getItemById,
   updateItem,
  )
-import Data.Text qualified as T
 import Effects.Error (AppError (..), throwNotFound)
 import Effects.Logger (Logger, logInfo)
 import Model.Types (Item, NewItem)
-import Polysemy (Embed, Sem)
+import Polysemy (Sem, Members)
 import Polysemy.Error (Error)
+import Data.String.Interpolate (i)
 
-handleGetAll :: forall a. (Sem '[ItemRepo, Logger, Error AppError, Embed IO]) (ApiResponse [Item])
+type IsHandler r = Members '[ItemRepo, Logger, Error AppError] r
+
+handleGetAll :: Members '[ItemRepo, Logger] r => Sem r (ApiResponse [Item])
 handleGetAll = do
-  logInfo "GET /items"
   items <- getAllItems
   pure (ok items)
-handleGetOne :: Int -> (Sem '[ItemRepo, Logger, Error AppError, Embed IO]) (ApiResponse Item)
+
+handleGetOne :: IsHandler r => Int -> Sem r (ApiResponse Item)
 handleGetOne itemId = do
-  logInfo $ "GET /items/" <> T.pack (show itemId)
   mItem <- getItemById itemId
   case mItem of
-    Nothing -> throwNotFound $ "Item " <> T.pack (show itemId) <> " not found"
+    Nothing -> throwNotFound [i|Item #{itemId} not found|]
     Just item -> pure (ok item)
 
-handleCreate :: NewItem -> (Sem '[ItemRepo, Logger, Error AppError, Embed IO]) (ApiResponse Item)
+handleCreate :: Members '[ItemRepo, Logger] r => NewItem -> Sem r (ApiResponse Item)
 handleCreate body = do
-  logInfo "POST /items"
   item <- createItem body
   pure (ok item)
 
 handleUpdate
-  :: Int -> NewItem -> (Sem '[ItemRepo, Logger, Error AppError, Embed IO]) (ApiResponse Item)
+  :: IsHandler r => Int -> NewItem -> Sem r (ApiResponse Item)
 handleUpdate itemId body = do
-  logInfo $ "PUT /items/" <> T.pack (show itemId)
   mItem <- updateItem itemId body
   case mItem of
-    Nothing -> throwNotFound $ "Item " <> T.pack (show itemId) <> " not found"
+    Nothing -> throwNotFound [i|Item #{itemId} not found|]
     Just item -> pure (ok item)
 
-handleDelete :: Int -> (Sem '[ItemRepo, Logger, Error AppError, Embed IO]) (ApiResponse Bool)
+handleDelete :: IsHandler r => Int -> Sem r (ApiResponse Bool)
 handleDelete itemId = do
-  logInfo $ "DELETE /items/" <> T.pack (show itemId)
   deleted <- deleteItem itemId
   if deleted
     then pure (ok True)
-    else throwNotFound $ "Item " <> T.pack (show itemId) <> " not found"
+    else throwNotFound [i|Item #{itemId} not found|]

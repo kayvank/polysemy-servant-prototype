@@ -33,9 +33,15 @@
           pkgs = nixpkgs.legacyPackages.${system};
           hook = pre-commit-hooks.lib.${system};
           tools = import "${pre-commit-hooks}/nix/call-tools.nix" pkgs;
-
+          # hpkgs = pkgs.haskell.packages.ghc910.override {
+          #   overrides = final: prev: {
+          #     www = final.callCabal2nix "www" ./src/www {};
+          #   };
+          # };
         in
         rec {
+          packages.server = pkgs.haskell.packages.ghc910.callCabal2nix "www" ./src/www {};
+
           checks.pre-commit-check = hook.run {
             src = self;
             tools = tools;
@@ -47,7 +53,7 @@
             };
           };
 
-          devShells.default = pkgs.haskellPackages.shellFor {
+          devShells.default = pkgs.haskell.packages.ghc910.shellFor {
             name = "cabal-project";
             # withHoogle = true; // uncomment to enable Hoogle support
             buildInputs = with pkgs; [

@@ -18,7 +18,7 @@ import Database.SQLite.Simple (Connection)
 import Effects.Error (AppError (..), runAppError)
 import Effects.Logger (Logger, runLoggerIO)
 import Model.Types (Item, NewItem)
-import Polysemy (Embed, Members, Sem, runM)
+import Polysemy (Embed, Sem, runM)
 import Polysemy.Error (Error)
 import Servant (
   Capture,
@@ -86,17 +86,3 @@ runner conn action =
 
 server :: Connection -> Server API
 server conn = hoistServer api (runner conn) semServer
-
--- | Lift a Polysemy program into Servant's Handler
-liftSem
-  :: ( forall r
-        . (Members '[ItemRepo, Logger, Error AppError, Embed IO] r) => Sem r a -> IO (Either AppError a)
-     )
-  -> Sem '[ItemRepo, Logger, Error AppError, Embed IO] a
-  -> Handler a
-liftSem runner action =
-  liftIO (runner action) >>= \case
-    Left (NotFound msg) -> throwError $ err404{errBody = encode (err msg)}
-    Left (ValidationError msg) -> throwError $ err400{errBody = encode (err msg)}
-    Left (DatabaseError msg) -> throwError $ err500{errBody = encode (err msg)}
-    Right x -> pure x

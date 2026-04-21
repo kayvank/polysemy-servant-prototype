@@ -11,7 +11,6 @@ license-file:    LICENSE
 -- maintainer:
 -- copyright:
 build-type:      Simple
-extra-doc-files: CHANGELOG.md
 
 -- extra-source-files:
 common base
@@ -36,9 +35,10 @@ common project-config
   ghc-options:
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
-    -ddump-splices -threaded -fno-warn-name-shadowing
-    -fplugin=Polysemy.Plugin
+    -threaded -fno-warn-name-shadowing
+    -rtsopts -with-rtsopts=-N
 
+-- -ddump-splices
 -- -ddump-deriv
 
 library
@@ -58,10 +58,10 @@ library
     , aeson
     , data-default
     , polysemy
-    , polysemy-plugin
     , servant-server
     , sqlite-simple
     , text
+    , string-interpolate
 
   hs-source-dirs:   src/lib
   default-language: GHC2021
@@ -74,11 +74,10 @@ executable www
   -- other-extensions:
   build-depends:
     , data-default
-    , polysemy
-    , polysemy-plugin
     , servant-server
     , warp
     , www
+    , wai-extra
 
   hs-source-dirs: src/bin
 
@@ -89,13 +88,12 @@ test-suite www-test
   -- other-extensions:
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
-  main-is:        Specs.hs
+  main-is:        Spec.hs
 
   -- other-modules:  Tests.NaiveSpecs
   build-depends:
     , hspec
     , polysemy
-    , polysemy-plugin
     , tasty
     , tasty-hspec
     , www
