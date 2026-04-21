@@ -1,15 +1,21 @@
 cabal-version:   3.4
 name:            www
 version:         0.1.0.0
+synopsis:        A polysemy servant http application
 
--- synopsis:
 -- description:
+homepage:        https://kayvank.github.io/cv
 license:         BSD-3-Clause
 license-file:    LICENSE
+author:          Kayvan Kazeminejad
+maintainer:      kayvan@q2io.com
 
--- author:
--- maintainer:
 -- copyright:
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+-- extra-source-files:
+
 build-type:      Simple
 
 -- extra-source-files:
@@ -31,12 +37,6 @@ common project-config
     TypeApplications
     TypeFamilies
     TypeOperators
-
-  ghc-options:
-    -Wall -Wcompat -Wincomplete-record-updates
-    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
-    -threaded -fno-warn-name-shadowing
-    -rtsopts -with-rtsopts=-N
 
 -- -ddump-splices
 -- -ddump-deriv
@@ -60,11 +60,15 @@ library
     , polysemy
     , servant-server
     , sqlite-simple
-    , text
     , string-interpolate
+    , text
 
   hs-source-dirs:   src/lib
   default-language: GHC2021
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing
 
 executable www
   import:         base,project-config
@@ -75,11 +79,15 @@ executable www
   build-depends:
     , data-default
     , servant-server
+    , wai-extra
     , warp
     , www
-    , wai-extra
 
   hs-source-dirs: src/bin
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
 
 test-suite www-test
   import:         base,project-config
@@ -89,11 +97,15 @@ test-suite www-test
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
   main-is:        Spec.hs
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
 
   -- other-modules:  Tests.NaiveSpecs
   build-depends:
     , hspec
-    , polysemy
     , tasty
     , tasty-hspec
-    , www
+
+-- , www

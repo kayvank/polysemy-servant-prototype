@@ -15,6 +15,7 @@
       pre-commit-hooks,
       ...
     }:
+
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         # To import a flake module
@@ -33,14 +34,14 @@
           pkgs = nixpkgs.legacyPackages.${system};
           hook = pre-commit-hooks.lib.${system};
           tools = import "${pre-commit-hooks}/nix/call-tools.nix" pkgs;
-          # hpkgs = pkgs.haskell.packages.ghc910.override {
-          #   overrides = final: prev: {
-          #     www = final.callCabal2nix "www" ./src/www {};
-          #   };
-          # };
+          hpkgs = pkgs.haskell.packages.ghc910.override {
+            overrides = final: prev: {
+              www-server = final.callCabal2nix "www-server" ./src/www { };
+            };
+          };
         in
         rec {
-          packages.server = pkgs.haskell.packages.ghc910.callCabal2nix "www" ./src/www {};
+          packages.server = hpkgs.www-server;
 
           checks.pre-commit-check = hook.run {
             src = self;
@@ -77,7 +78,7 @@
               codespell
 
               # nix
-              nixfmt-rfc-style
+              nixfmt
 
               figlet
 
@@ -100,11 +101,9 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
-      "https://cache.sc.iog.io"
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
-      "cache.sc.iog.io:b4YIcBabCEVKrLQgGW8Fylz4W8IvvfzRc+hy0idqrWU="
     ];
     allow-import-from-derivation = true;
     accept-flake-config = true;
