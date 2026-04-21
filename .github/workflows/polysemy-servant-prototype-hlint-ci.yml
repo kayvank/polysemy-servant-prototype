@@ -4,13 +4,13 @@ on:
   push:
     branches: [ "main" ]
     paths:
-      - './**'
+      - '**'
       - '.github/workflows/polysemy-servant-prototype-hlint-ci.yml'
 
   pull_request:
     branches: [ "main" ]
     paths:
-      - './**'
+      - '**'
       - '.github/workflows/polysemy-servant-prototype-hlint-ci.yml'
 
 

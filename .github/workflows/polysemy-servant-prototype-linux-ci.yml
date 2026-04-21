@@ -10,7 +10,7 @@ on:
   pull_request:
     branches: [ "**" ]
     paths:
-      - './**'
+      - '**'
       - '.github/workflows/polysemy-servant-prototype-linux-ci.yml'
 
 jobs:
@@ -69,7 +69,7 @@ jobs:
         #
         # We do not use plan.json directly because adding a dependency to our
         # Cabal files which was already present somewhere else would result in a
-        # diferent plan, even though the set of dependencies is the same.
+        # different plan, even though the set of dependencies is the same.
       - name: Record dependencies to be used as cache keys
         working-directory: .
         id: record-deps

@@ -41,7 +41,7 @@
           };
         in
         rec {
-          packages.server = hpkgs.www-server;
+          packages.www-server = hpkgs.www-server;
 
           checks.pre-commit-check = hook.run {
             src = self;

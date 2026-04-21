@@ -16,9 +16,6 @@ extra-doc-files: CHANGELOG.md
 
 -- extra-source-files:
 
-build-type:      Simple
-
--- extra-source-files:
 common base
   build-depends: base >=4.9 && <5
 
