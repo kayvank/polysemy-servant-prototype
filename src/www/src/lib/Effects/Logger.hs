@@ -1,5 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{- |
+Module      : Effects.Logger
+Description : Logging effect and IO interpreter
+-}
 module Effects.Logger where
 
 import Data.Text (Text)

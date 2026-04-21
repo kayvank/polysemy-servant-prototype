@@ -6,11 +6,8 @@ import Servant.Server (serve)
 import API.Routes (api, server)
 import DB.Schema (openDb)
 import Data.Default (def)
-import Effects.Config (
-  AppConfig (configAppName, configDbPath, configPort),
-  defaultConfig,
- )
-import qualified Network.Wai.Middleware.RequestLogger as Logger
+import Effects.Config (AppConfig (configPort))
+import Network.Wai.Middleware.RequestLogger qualified as Logger
 
 main :: IO ()
 main = do

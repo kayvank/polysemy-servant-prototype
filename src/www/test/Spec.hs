@@ -2,7 +2,7 @@ module Main (main) where
 
 import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.Hspec (testSpec)
-import qualified Tests.NaiveSpecs
+import Tests.NaiveSpecs qualified
 
 main :: IO ()
 main = do

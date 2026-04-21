@@ -1,5 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+{- |
+Module      : API.Routes
+Description : Route definitions and server implementation
+-}
 module API.Routes where
 
 import API.Handlers (
