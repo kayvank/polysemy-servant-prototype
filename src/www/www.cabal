@@ -41,20 +41,28 @@ common project-config
 library
   import:           base,project-config
   exposed-modules:
+    API.ApiResponse
     API.Handlers
     API.Routes
-    API.Types
-    DB.ItemRepo
-    DB.Schema
+    API.Server
+    DB.Database
+    DB.LineItemRepository
+    DB.UserRepository
     Effects.Config
     Effects.Error
     Effects.Logger
-    Model.Types
+    Model.LineItem
+    Model.User
 
+  -- DB.Schema
   build-depends:
     , aeson
+    , beam-core
+    , beam-migrate
+    , beam-sqlite
     , data-default
     , polysemy
+    , resource-pool
     , servant-server
     , sqlite-simple
     , string-interpolate

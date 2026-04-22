@@ -55,7 +55,7 @@ curl -i  -X DELETE "http://localhost:8080/items/1"
 ```
 ## TODO
 - [ ] Config should be Reader Monad
-- [ ] use beam for DB stuff
+- [ ] use beam for Db stuff
 - [x] add github action
 - [ ] Logging is incomplete
 - [ ] More domain objects

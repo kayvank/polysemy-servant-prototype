@@ -4,6 +4,9 @@
 # Also sends a User-Agent header, because the Github API requires this.
 #
 GET http://localhost:8080/items
+#
+#
+GET http://localhost:8080/items/1
 
 #
 POST http://localhost:8080/items
@@ -21,6 +24,19 @@ Content-Type: application/json
 }
 
 #
-DELETE http://localhost:8080/items/1
+DELETE http://localhost:8080/items/4
 #
 DELETE http://localhost:8080/items/2
+#
+#
+POST http://localhost:8080/users
+Content-Type: application/json
+{
+  "firstName" : "f-name-1",
+  "lastName" : "l-name-1",
+  "email": "f-name-18l-name-1.net"
+}
+#
+GET http://localhost:8080/users
+#
+GET http://localhost:8080/users/1

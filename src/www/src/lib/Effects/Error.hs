@@ -27,8 +27,8 @@ throwNotFound = throw . NotFound
 throwValidation :: (Member (Error AppError) r) => Text -> Sem r a
 throwValidation = throw . ValidationError
 
-throwDbError :: (Member (Error AppError) r) => Text -> Sem r a
-throwDbError = throw . DatabaseError
+throwDBError :: (Member (Error AppError) r) => Text -> Sem r a
+throwDBError = throw . DatabaseError
 
 -- | Re-export polysemy error helpers for convenience
 runAppError :: Sem (Error AppError ': r) a -> Sem r (Either AppError a)

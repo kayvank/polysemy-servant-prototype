@@ -4,7 +4,7 @@
 Module      : API.Types
 Description : Common types for API responses
 -}
-module API.Types (
+module API.ApiResponse (
   ApiResponse (..),
   ok,
   err,
