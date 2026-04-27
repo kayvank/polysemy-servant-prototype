@@ -38,15 +38,17 @@ semHandler
        API
        (Sem '[UserRepository, LineItemRepo, Logger, Error AppError, Reader AppConfig, Embed IO])
 semHandler =
-  handleGetAllUsers
-    :<|> handleGetOneUser
-    :<|> handleCreateUser
-    :<|> handleUpdateUser
-    :<|> handleGetAllLineItem
-    :<|> handleGetOneLineItem
-    :<|> handleCreateLineItem
-    :<|> handleUpdateLineItem
-    :<|> handleDeleteLineItem
+  ( handleGetAllUsers
+      :<|> handleGetOneUser
+      :<|> handleCreateUser
+      :<|> handleUpdateUser
+  )
+    :<|> ( handleGetAllLineItem
+             :<|> handleGetOneLineItem
+             :<|> handleCreateLineItem
+             :<|> handleUpdateLineItem
+             :<|> handleDeleteLineItem
+         )
 
 lowerToHandler
   :: AppConfig
