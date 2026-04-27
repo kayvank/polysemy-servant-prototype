@@ -29,7 +29,7 @@ type API =
 type UserAPI =
   Get '[JSON] (ApiResponse [User])
     :<|> Capture "id" Int :> Get '[JSON] (ApiResponse User)
-    :<|> ReqBody '[JSON] NewUser :> Post '[JSON] ()
+    :<|> ReqBody '[JSON] NewUser :> Post '[JSON] (ApiResponse User)
     :<|> Capture "id" Int :> ReqBody '[JSON] NewUser :> Put '[JSON] (ApiResponse User) -- PUT  /users/:id
 
 -- | Route definitions
