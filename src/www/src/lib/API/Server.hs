@@ -1,13 +1,7 @@
 module API.Server where
 
 import API.ApiResponse (err)
-import API.Handlers (
-  handleCreateLineItem,
-  handleDeleteLineItem,
-  handleGetAllLineItem,
-  handleGetOneLineItem,
-  handleUpdateLineItem,
- )
+import API.Handlers
 import API.Routes (API)
 import Control.Monad.IO.Class (liftIO)
 import DB.LineItemRepository (LineItemRepo, runLineItemRepoSQLite)
@@ -44,18 +38,15 @@ semHandler
        API
        (Sem '[UserRepository, LineItemRepo, Logger, Error AppError, Reader AppConfig, Embed IO])
 semHandler =
-  -- handleGetAllUsers
-  --   :<|> handleGetOneUser
-  --   :<|> handleCreateUser
-  --   :<|> handleUpdateUser
-  -- :<|>
-  handleGetAllLineItem
+  handleGetAllUsers
+    :<|> handleGetOneUser
+    :<|> handleCreateUser
+    :<|> handleUpdateUser
+    :<|> handleGetAllLineItem
     :<|> handleGetOneLineItem
     :<|> handleCreateLineItem
     :<|> handleUpdateLineItem
     :<|> handleDeleteLineItem
-
--- :<|>
 
 lowerToHandler
   :: AppConfig
