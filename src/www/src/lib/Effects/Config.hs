@@ -11,9 +11,9 @@ module Effects.Config (
   ConnectionString (..),
   NetworkConfig (..),
   AppName (..),
-  LogLevel (..),
   DBConfig (..),
   AppConfig (..),
+  Config (..),
   ConfigInput (..),
 
   -- * helper functions

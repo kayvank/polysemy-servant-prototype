@@ -14,10 +14,8 @@ import Data.Aeson (
   withObject,
   (.:),
  )
-import Data.Default (Default (..))
 import Data.Text (Text)
 import Data.Text.IO qualified as Text.IO
-import GHC.Generics (Generic)
 import Polysemy (Embed, Member, Sem, embed, interpret, makeSem)
 
 -- | Effect
@@ -36,24 +34,3 @@ runLoggerIO = interpret $ \case
   LogInfo msg -> embed $ Text.IO.putStrLn $ "[INFO]  " <> msg
   LogWarn msg -> embed $ Text.IO.putStrLn $ "[WARN]  " <> msg
   LogError msg -> embed $ Text.IO.putStrLn $ "[ERROR] " <> msg
-
-data LogLevel = DEBUG | INFO | WARN | ERROR
-  deriving (Show, Generic)
-
-instance ToJSON LogLevel where
-  toJSON DEBUG = object ["level" .= ("DEBUG" :: Text)]
-  toJSON INFO = object ["level" .= ("INFO" :: Text)]
-  toJSON WARN = object ["level" .= ("WARN" :: Text)]
-  toJSON ERROR = object ["level" .= ("ERROR" :: Text)]
-instance FromJSON LogLevel where
-  parseJSON = withObject "LogLevel" $ \v -> do
-    level <- v .: "level"
-    case level :: Text of
-      "DEBUG" -> pure DEBUG
-      "INFO" -> pure INFO
-      "WARN" -> pure WARN
-      "ERROR" -> pure ERROR
-      _ -> fail "Invalid log level"
-
-instance Default LogLevel where
-  def = INFO

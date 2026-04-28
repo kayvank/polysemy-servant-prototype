@@ -5,6 +5,7 @@ module Main where
 import API.Server (api, server)
 import DB.Database (createSqlitePool)
 import Data.Default (def)
+import Effects.CLI (appConfigIO)
 import Effects.Config (
   AppConfig (..),
   DBConfig (DBConfig),
@@ -17,8 +18,7 @@ import Servant.Server (serve)
 main :: IO ()
 main = do
   -- TODO: cli to read config
-  cfg@AppConfig{..} <- defaultAppConfig
-
+  cfg@AppConfig{..} <- appConfigIO -- defaultAppConfig
   Network.Wai.Handler.Warp.run
     (_networkPort _appNetworkConfig)
     (Logger.logStdout (serve api (server cfg)))

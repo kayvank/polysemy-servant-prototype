@@ -1,13 +1,48 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Effects.CLI where
 
 import Data.Char (toLower)
-import Effects.Config
-import Effects.Error
-import Options.Applicative
-import Polysemy
-import Polysemy.Error (Error, throw)
+import Data.String.Interpolate (i)
+import Data.Text qualified as Text
+import Effects.Config (
+  AppConfig,
+  AppName (AppName),
+  Config (Config),
+  ConfigInput (..),
+  ConnectionString (ConnectionString),
+  NetworkConfig (NetworkConfig),
+  configToAppConfig,
+ )
+import Log.LogLevel (LogLevel (..))
+import Log.Logger (Logger, logInfo, runLoggerIO)
+import Options.Applicative (
+  Alternative ((<|>)),
+  Parser,
+  ParserInfo,
+  ReadM,
+  auto,
+  eitherReader,
+  execParser,
+  flag',
+  fullDesc,
+  header,
+  help,
+  helper,
+  info,
+  long,
+  metavar,
+  option,
+  progDesc,
+  short,
+  showDefault,
+  strOption,
+  value,
+  (<**>),
+ )
+import Polysemy (Embed, Member, Members, Sem, embed, runM)
 
 fileInput :: Parser ConfigInput
 fileInput =
@@ -50,47 +85,20 @@ logLevelParser =
         <> showDefault
     )
 
-debugFlag :: Parser Bool
-debugFlag =
-  switch
-    ( long "debug"
-        <> help "Enable debug mode"
-    )
-infoFlag :: Parser Bool
-infoFlag =
-  switch
-    ( long "info"
-        <> help "Enable info mode"
-    )
-warnFlag :: Parser Bool
-warnFlag =
-  switch
-    ( long "warn"
-        <> help "Enable warn mode"
-    )
-errorFlag :: Parser Bool
-errorFlag =
-  switch
-    ( long "error"
-        <> help "Enable error mode"
-    )
-
-connectionStringParser :: Parser String
+connectionStringParser :: Parser ConnectionString
 connectionStringParser =
-  strOption
-    ( long "db-connection"
-        <> short 'd'
-        <> metavar "CONNECTION_STRING"
-        <> help "Database connection string"
-        <> value ".db/myapp.db"
-        <> showDefault
-    )
+  ConnectionString . Text.pack
+    <$> strOption
+      ( long "db-path"
+          <> short 'd'
+          <> metavar "PATH"
+          <> help "SQlite connection path, e.g. for .db/myapp.db"
+          <> value ".db/myapp.db"
+          <> showDefault
+      )
 
-appDBConfigParser :: Parser DBConfig
-appDBConfigParser = undefined
-
-appNetworkConfigParser :: Parser NetworkConfig
-appNetworkConfigParser =
+networkConfigParser :: Parser NetworkConfig
+networkConfigParser =
   NetworkConfig
     <$> option
       auto
@@ -104,10 +112,33 @@ appNetworkConfigParser =
 appNameParser :: Parser AppName
 appNameParser = pure (AppName "MyApp")
 
-appConfigParser :: Parser AppConfig
-appConfigParser =
-  AppConfig
-    <$> appDBConfigParser
-    <*> appNetworkConfigParser
+configParser :: Parser Config
+configParser =
+  Config
+    <$> connectionStringParser
+    <*> networkConfigParser
     <*> appNameParser
     <*> logLevelParser
+
+runCli :: (Member (Embed IO) r) => Sem r Config
+runCli =
+  let
+    opts :: ParserInfo Config
+    opts =
+      info
+        (configParser <**> helper)
+        ( fullDesc
+            <> progDesc "Run the application with the specified configuration"
+            <> header "MyApp - a sample application demonstrating Polysemy effects and Beam with Sqlite backend"
+        )
+   in
+    embed $ execParser opts
+
+appConfigFromCli :: (Members '[Embed IO, Logger] r) => Sem r AppConfig
+appConfigFromCli = do
+  config <- runCli
+  logInfo [i|Loaded config: #{config}|]
+  embed $ configToAppConfig config
+
+appConfigIO :: IO AppConfig
+appConfigIO = runM $ runLoggerIO appConfigFromCli
