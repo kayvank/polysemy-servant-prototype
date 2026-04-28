@@ -38,7 +38,7 @@ import Database.Beam.Sqlite (
 import Database.Beam.Sqlite.Connection (deleteReturning, runDeleteReturningList)
 import Effects.Config (AppConfig, getPool)
 import Effects.Error (AppError)
-import Effects.Logger (Logger, logDebug)
+import Log.Logger (Logger, logDebug)
 import Model.LineItem (
   LineItem,
   LineItemT (LineItem, _itemDesc, _itemId, _itemName),

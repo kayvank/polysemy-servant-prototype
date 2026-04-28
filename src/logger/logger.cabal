@@ -1,0 +1,58 @@
+cabal-version:   3.12
+name:            logger
+version:         0.1.0.0
+synopsis:        A polysemy servant http application
+
+-- description:
+homepage:        https://kayvank.github.io/cv
+license:         BSD-3-Clause
+license-file:    LICENSE
+author:          Kayvan Kazeminejad
+maintainer:      kayvan@q2io.com
+
+-- copyright:
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+-- extra-source-files:
+
+common base
+  build-depends: base >=4.9 && <5
+
+common project-config
+  default-language:   GHC2021
+  default-extensions:
+    DataKinds
+    DeriveGeneric
+    FlexibleContexts
+    GADTs
+    LambdaCase
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    TemplateHaskell
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+
+-- -ddump-splices
+-- -ddump-deriv
+library
+  import:           base, project-config
+  exposed-modules:
+    Log.Logger
+    Log.LogLevel
+
+  build-depends:
+    , aeson
+    , data-default
+    , polysemy
+    , string-interpolate
+    , text
+
+  hs-source-dirs:   src/lib
+  default-language: GHC2021
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing

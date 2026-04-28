@@ -15,6 +15,7 @@ data AppError
   = NotFound Text
   | ValidationError Text
   | DatabaseError Text
+  | ConfigError Text
   deriving (Show, Eq, Generic)
 
 instance ToJSON AppError
@@ -29,6 +30,9 @@ throwValidation = throw . ValidationError
 
 throwDBError :: (Member (Error AppError) r) => Text -> Sem r a
 throwDBError = throw . DatabaseError
+
+throwConfigError :: (Member (Error AppError) r) => Text -> Sem r a
+throwConfigError = throw . ConfigError
 
 -- | Re-export polysemy error helpers for convenience
 runAppError :: Sem (Error AppError ': r) a -> Sem r (Either AppError a)

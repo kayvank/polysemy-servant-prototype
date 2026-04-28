@@ -48,19 +48,20 @@ library
     DB.Database
     DB.LineItemRepository
     DB.UserRepository
+    Effects.CLI
     Effects.Config
     Effects.Error
-    Effects.Logger
     Model.LineItem
     Model.User
 
-  -- DB.Schema
   build-depends:
     , aeson
     , beam-core
     , beam-migrate
     , beam-sqlite
     , data-default
+    , logger
+    , optparse-applicative
     , polysemy
     , resource-pool
     , servant-server
