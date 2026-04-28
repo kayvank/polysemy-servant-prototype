@@ -16,17 +16,13 @@ import Data.Aeson (
   encode,
   object,
  )
-import Data.Maybe (fromMaybe)
+import Data.ByteString.Lazy.Char8 qualified as C8
 import Data.Text (Text)
 import Data.Text qualified as Text
-import Data.Text.IO qualified as Text.IO
-import Data.Text.Lazy qualified as Text.Lazy
-import Data.Text.Lazy.Encoding (decodeUtf8)
 import Data.Time (UTCTime, getCurrentTime)
 import GHC.Generics (Generic)
 import Log.LogLevel (LogLevel (..))
 import Polysemy (Embed, Member, Sem, embed, interpret, makeSem)
-import Text.Read (readMaybe)
 
 -- | Effect
 data Logger m a where
@@ -43,33 +39,33 @@ makeSem ''Logger
 runLoggerIO :: (Member (Embed IO) r) => Sem (Logger ': r) a -> Sem r a
 runLoggerIO = interpret $ \case
   LogDebug msg ->
-    toLogEvent (NameSpace "dev") DEBUG msg
-      >>= embed . Text.IO.putStrLn . Text.Lazy.toStrict . decodeUtf8 . encode
+    toLogEvent (Namespace "dev") DEBUG msg
+      >>= embed . C8.putStrLn . encode
   LogInfo msg ->
-    toLogEvent (NameSpace "dev") INFO msg
-      >>= embed . Text.IO.putStrLn . Text.Lazy.toStrict . decodeUtf8 . encode
+    toLogEvent (Namespace "dev") INFO msg
+      >>= embed . C8.putStrLn . encode
   LogWarn msg ->
-    toLogEvent (NameSpace "dev") WARN msg
-      >>= embed . Text.IO.putStrLn . Text.Lazy.toStrict . decodeUtf8 . encode
+    toLogEvent (Namespace "dev") WARN msg
+      >>= embed . C8.putStrLn . encode
   LogError msg ->
-    toLogEvent (NameSpace "dev") ERROR msg
-      >>= embed . Text.IO.putStrLn . Text.Lazy.toStrict . decodeUtf8 . encode
+    toLogEvent (Namespace "dev") ERROR msg
+      >>= embed . C8.putStrLn . encode
 
-newtype NameSpace = NameSpace Text
+newtype Namespace = Namespace Text
   deriving (Show, Generic)
   deriving (ToJSON) via Text
 
-data LogEnvelop = LogEnvelop
+data LogEnvelope = LogEnvelope
   { timestamp :: UTCTime
-  , threadId :: Int
+  , threadId :: Text
   , logLevel :: LogLevel
-  , nameSpace :: NameSpace
+  , namespace :: Namespace
   }
   deriving (Show, Generic)
 
 -- | Provides logging metadata for entries.
 data LogEvent = LogEvent
-  { logEnvelop :: LogEnvelop
+  { logEnvelope :: LogEnvelope
   , logMessage :: Value
   }
   deriving (Show, Generic)
@@ -77,32 +73,32 @@ data LogEvent = LogEvent
 instance ToJSON LogEvent where
   toJSON LogEvent{..} =
     object
-      [ "timestamp" .= timestamp logEnvelop
-      , "threadId" .= threadId logEnvelop
-      , "logLevel" .= logLevel logEnvelop
-      , "nameSpace" .= nameSpace logEnvelop
+      [ "timestamp" .= timestamp logEnvelope
+      , "threadId" .= threadId logEnvelope
+      , "logLevel" .= logLevel logEnvelope
+      , "namespace" .= namespace logEnvelope
       , "message" .= logMessage
       ]
 
-toLogEvent :: (Member (Embed IO) r) => NameSpace -> LogLevel -> Value -> Sem r LogEvent
-toLogEvent nameSpace logLevel logMessage = do
+toLogEvent :: (Member (Embed IO) r) => Namespace -> LogLevel -> Value -> Sem r LogEvent
+toLogEvent namespace logLevel logMessage = do
   timestamp <- embed getCurrentTime
   threadId <- mkThreadId <$> embed myThreadId
-  let logEnvelop = LogEnvelop{..}
+  let logEnvelope = LogEnvelope{..}
   pure $ LogEvent{..}
   where
     -- NOTE(AB): This is a bit contrived but we want a numeric threadId and we
     -- get some text which we know the structure of
-    mkThreadId = fromMaybe 0 . readMaybe . Text.unpack . Text.drop 9 . Text.pack . show
+    mkThreadId = Text.pack . show
 
 -- | Pure version of toLogEvent for testing purposes
-toLogEventPure :: NameSpace -> LogLevel -> Value -> LogEvent
-toLogEventPure nameSpace logLevel logMessage =
+toLogEventPure :: Namespace -> LogLevel -> Value -> LogEvent
+toLogEventPure namespace logLevel logMessage =
   let
     timestamp :: UTCTime
     timestamp = read "2026-04-28 17:48:08.00367981 UTC"
-    threadId :: Int
-    threadId = 12345
-    logEnvelop = LogEnvelop{..}
+    threadId :: Text
+    threadId = "thread-12345"
+    logEnvelope = LogEnvelope{..}
    in
     LogEvent{..}
