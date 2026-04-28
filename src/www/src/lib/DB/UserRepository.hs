@@ -30,7 +30,7 @@ import Database.Beam (
 import Database.Beam.Sqlite (Sqlite, insertReturning, runBeamSqliteDebug, runInsertReturningList)
 import Effects.Config (AppConfig, getPool)
 import Effects.Error (AppError)
-import Effects.Logger (Logger, logInfo)
+import Log.Logger (Logger, logInfo)
 import Model.User (
   NewUser (..),
   PrimaryKey (UserId),

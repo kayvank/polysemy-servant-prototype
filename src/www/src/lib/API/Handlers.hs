@@ -38,7 +38,7 @@ import DB.UserRepository (
  )
 import Data.String.Interpolate (i)
 import Effects.Error (AppError (..), throwDBError, throwNotFound)
-import Effects.Logger (Logger, logDebug)
+import Log.Logger (Logger, logDebug)
 import Model.LineItem (LineItem, NewLineItem)
 import Model.User (NewUser, User)
 import Polysemy (Members, Sem)

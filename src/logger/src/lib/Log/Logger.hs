@@ -4,8 +4,16 @@
 Module      : Effects.Logger
 Description : Logging effect and IO interpreter
 -}
-module Effects.Logger where
+module Log.Logger where
 
+import Data.Aeson (
+  FromJSON (parseJSON),
+  KeyValue ((.=)),
+  ToJSON (toJSON),
+  object,
+  withObject,
+  (.:),
+ )
 import Data.Text (Text)
 import Data.Text.IO qualified as Text.IO
 import Polysemy (Embed, Member, Sem, embed, interpret, makeSem)

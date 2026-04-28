@@ -4,6 +4,8 @@
 
 module DB.Database where
 
+import Data.Aeson
+import Data.Default (Default (def))
 import Data.Foldable (traverse_)
 import Data.Functor (void)
 import Data.Pool (Pool, defaultPoolConfig, newPool, withResource)
@@ -42,9 +44,27 @@ import Database.Beam.Sqlite (
  )
 import Database.Beam.Sqlite.Migrate (migrationBackend)
 import Database.SQLite.Simple (Connection, Query (Query), close, execute_, open)
-import Effects.Config (ConnectionString (..))
 import Model.LineItem (LineItemT (..))
 import Model.User (UserT (..))
+
+-- | A SQLite3 connection string
+newtype ConnectionString
+  = ConnectionString
+  { unConnectionString :: Text
+  }
+  deriving (IsString) via Text
+  deriving (Generic)
+  deriving (Show)
+
+instance ToJSON ConnectionString where
+  toJSON (ConnectionString connStr) = object ["connectionString" .= connStr]
+instance FromJSON ConnectionString where
+  parseJSON = withObject "ConnectionString" $ \v ->
+    ConnectionString <$> v .: "connectionString"
+
+instance Default ConnectionString where
+  def :: ConnectionString
+  def = ConnectionString ".db/myapp.db"
 
 -- | This module defines the database schema and migration logic for the shopping cart application.
 data ShoppingCartDB f = ShoppingCartDB
