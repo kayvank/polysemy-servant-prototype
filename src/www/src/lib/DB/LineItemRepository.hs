@@ -32,13 +32,12 @@ import Database.Beam (
 import Database.Beam.Sqlite (
   Sqlite,
   insertReturning,
-  runBeamSqliteDebug,
+  runBeamSqlite,
   runSqliteInsertReturningList,
  )
 import Database.Beam.Sqlite.Connection (deleteReturning, runSqliteDeleteReturningList)
 import Effects.Config (AppConfig, getPool)
 import Effects.Error (AppError)
-import Log.Logger (Logger, logDebug)
 import Model.LineItem (
   LineItem,
   LineItemT (LineItem, _itemDesc, _itemId, _itemName),
@@ -61,19 +60,17 @@ makeSem ''LineItemRepo
 
 -- | SQLite interpreter
 runLineItemRepoSQLite
-  :: (Members '[Reader AppConfig, Logger, Error AppError, Embed IO] r)
+  :: (Members '[Reader AppConfig, Error AppError, Embed IO] r)
   => Sem (LineItemRepo ': r) a
   -> Sem r a
 runLineItemRepoSQLite = interpret $ \case
-  GetAllLineItems -> logDebug "getAllLineItems" *> getAllLineItemsDB
-  GetLineItemById lineItemId -> logDebug "getLineItemById" *> getLineItemByIdDB lineItemId
-  CreateLineItem newLineItem ->
-    logDebug "createLineItem" *> createLineItemDB newLineItem
-  UpdateLineItem lineItemId newLineItem ->
-    logDebug "updateLineItem" *> updateLineItemDB lineItemId newLineItem
-  DeleteLineItem lineItemId -> logDebug "deleteLineItem" *> deleteLineItemDB lineItemId
+  GetAllLineItems -> getAllLineItemsDB
+  GetLineItemById lineItemId -> getLineItemByIdDB lineItemId
+  CreateLineItem newLineItem -> createLineItemDB newLineItem
+  UpdateLineItem lineItemId newLineItem -> updateLineItemDB lineItemId newLineItem
+  DeleteLineItem lineItemId -> deleteLineItemDB lineItemId
 
-type IsHandler r = Members '[Embed IO, Logger, Reader AppConfig] r
+type IsHandler r = Members '[Embed IO, Reader AppConfig] r
 
 getAllLineItemsDB' :: (MonadBeam Sqlite m, FromBackendRow Sqlite LineItem) => m [LineItem]
 getAllLineItemsDB' = runSelectReturningList $ select $ all_ (shoppingCartLineItems shoppingCartDB)
@@ -81,7 +78,7 @@ getAllLineItemsDB' = runSelectReturningList $ select $ all_ (shoppingCartLineIte
 getAllLineItemsDB :: (IsHandler r) => Sem r [LineItem]
 getAllLineItemsDB = do
   pool <- asks getPool
-  embed $ withPool pool $ \conn -> runBeamSqliteDebug print conn getAllLineItemsDB'
+  embed $ withPool pool $ \conn -> runBeamSqlite conn getAllLineItemsDB'
 
 getLineItemByIdDB'
   :: (MonadBeam Sqlite m, FromBackendRow Sqlite LineItem) => Int32 -> m (Maybe LineItem)
@@ -92,7 +89,7 @@ getLineItemByIdDB' itemId =
 getLineItemByIdDB :: (IsHandler r) => Int32 -> Sem r (Maybe LineItem)
 getLineItemByIdDB lineItemId = do
   pool <- asks getPool
-  embed $ withPool pool $ \conn -> runBeamSqliteDebug print conn $ getLineItemByIdDB' lineItemId
+  embed $ withPool pool $ \conn -> runBeamSqlite conn $ getLineItemByIdDB' lineItemId
 
 createLineItemDB'
   :: (MonadBeam Sqlite m, FromBackendRow Sqlite LineItem) => NewLineItem -> m (Maybe LineItem)
@@ -112,7 +109,7 @@ createLineItemDB' NewLineItem{..} =
 createLineItemDB :: (IsHandler r) => NewLineItem -> Sem r (Maybe LineItem)
 createLineItemDB newLineItem = do
   pool <- asks getPool
-  embed $ withPool pool $ \conn -> runBeamSqliteDebug print conn $ createLineItemDB' newLineItem
+  embed $ withPool pool $ \conn -> runBeamSqlite conn $ createLineItemDB' newLineItem
 
 updateLineItemDB'
   :: (MonadBeam Sqlite m, FromBackendRow Sqlite LineItem) => Int32 -> NewLineItem -> m (Maybe LineItem)
@@ -131,7 +128,7 @@ updateLineItemDB' lineItemId newItem = do
 updateLineItemDB :: (IsHandler r) => Int32 -> NewLineItem -> Sem r (Maybe LineItem)
 updateLineItemDB lineItemId newLineItem = do
   pool <- asks getPool
-  embed $ withPool pool $ \conn -> runBeamSqliteDebug print conn $ updateLineItemDB' lineItemId newLineItem
+  embed $ withPool pool $ \conn -> runBeamSqlite conn $ updateLineItemDB' lineItemId newLineItem
 
 deleteLineItemDB' :: (MonadBeam Sqlite m) => Int32 -> m Bool
 deleteLineItemDB' lid =
@@ -146,4 +143,4 @@ deleteLineItemDB' lid =
 deleteLineItemDB :: (IsHandler r) => Int32 -> Sem r Bool
 deleteLineItemDB linteItemId = do
   pool <- asks getPool
-  embed $ withPool pool $ \conn -> runBeamSqliteDebug print conn $ deleteLineItemDB' linteItemId
+  embed $ withPool pool $ \conn -> runBeamSqlite conn $ deleteLineItemDB' linteItemId

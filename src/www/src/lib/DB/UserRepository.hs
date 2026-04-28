@@ -12,7 +12,6 @@ import DB.Database (
  )
 import Data.Int (Int32)
 import Data.Maybe (listToMaybe)
-import Data.String.Interpolate (i)
 import Database.Beam (
   FromBackendRow,
   MonadBeam,
@@ -30,12 +29,11 @@ import Database.Beam (
 import Database.Beam.Sqlite (
   Sqlite,
   insertReturning,
-  runBeamSqliteDebug,
+  runBeamSqlite,
   runSqliteInsertReturningList,
  )
 import Effects.Config (AppConfig, getPool)
 import Effects.Error (AppError)
-import Log.Logger (Logger, logInfo)
 import Model.User (
   NewUser (..),
   PrimaryKey (UserId),
@@ -55,26 +53,25 @@ data UserRepository m a where
 makeSem ''UserRepository
 
 runUserRepository
-  :: (Members '[Reader AppConfig, Logger, Error AppError, Embed IO] r)
+  :: (Members '[Reader AppConfig, Error AppError, Embed IO] r)
   => Sem (UserRepository ': r) a
   -> Sem r a
 runUserRepository = do
   interpret $ \case
-    GetAllUsers -> logInfo "getAllUsers" >> getAllUsersDB
-    GetUserById userId -> logInfo "getUserById" >> getUserByIdDB userId
-    CreateUser newUser -> logInfo "createUser" >> createUserDB newUser
-    UpdateUser userId newUser -> logInfo "updateUser" >> updateUserDB userId newUser
+    GetAllUsers -> getAllUsersDB
+    GetUserById userId -> getUserByIdDB userId
+    CreateUser newUser -> createUserDB newUser
+    UpdateUser userId newUser -> updateUserDB userId newUser
 
 -- TODO DeleteUser userId
 
-type IsHandler r = Members '[Embed IO, Logger, Reader AppConfig] r
+type IsHandler r = Members '[Embed IO, Reader AppConfig] r
 
 createUserDB :: (IsHandler r) => NewUser -> Sem r (Maybe User)
 createUserDB user = do
   pool <- asks getPool
-  logInfo [i|Creating user: #{user}|]
   embed $ withPool pool $ \conn ->
-    runBeamSqliteDebug print conn $ createUserDB' user
+    runBeamSqlite conn $ createUserDB' user
 
 createUserDB' :: (MonadBeam Sqlite m) => NewUser -> m (Maybe User)
 createUserDB' NewUser{..} =
@@ -98,7 +95,7 @@ getAllUsersDB :: (IsHandler r, FromBackendRow Sqlite User) => Sem r [User]
 getAllUsersDB = do
   pool <- asks getPool
   embed $ withPool pool $ \conn ->
-    runBeamSqliteDebug print conn getAllUsersDB'
+    runBeamSqlite conn getAllUsersDB'
 
 getUserByIdDB' :: (MonadBeam Sqlite m, FromBackendRow Sqlite User) => Int32 -> m (Maybe User)
 getUserByIdDB' userId =
@@ -109,7 +106,7 @@ getUserByIdDB :: (IsHandler r, FromBackendRow Sqlite User) => Int32 -> Sem r (Ma
 getUserByIdDB userId = do
   pool <- asks getPool
   embed $ withPool pool $ \conn ->
-    runBeamSqliteDebug print conn (getUserByIdDB' userId)
+    runBeamSqlite conn (getUserByIdDB' userId)
 
 updateUserDB' :: (MonadBeam Sqlite m) => Int32 -> NewUser -> m (Maybe User)
 updateUserDB' userId NewUser{..} = do
@@ -129,4 +126,4 @@ updateUserDB :: (IsHandler r) => Int32 -> NewUser -> Sem r (Maybe User)
 updateUserDB userId newUser = do
   pool <- asks getPool
   embed $ withPool pool $ \conn ->
-    runBeamSqliteDebug print conn (updateUserDB' userId newUser)
+    runBeamSqlite conn (updateUserDB' userId newUser)

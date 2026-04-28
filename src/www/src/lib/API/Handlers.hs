@@ -38,7 +38,7 @@ import DB.UserRepository (
  )
 import Data.String.Interpolate (i)
 import Effects.Error (AppError (..), throwDBError, throwNotFound)
-import Log.Logger (Logger, logDebug)
+import Log.Logger (Logger)
 import Model.LineItem (LineItem, NewLineItem)
 import Model.User (NewUser, User)
 import Polysemy (Members, Sem)
@@ -49,20 +49,18 @@ type IsUserHandler r = Members '[UserRepository, Logger, Error AppError] r
 
 handleGetAllLineItem :: (IsLineItemHandler r) => Sem r (ApiResponse [LineItem])
 handleGetAllLineItem =
-  logDebug "handleGetAllLineItem" >> (ok <$> getAllLineItems)
+  ok <$> getAllLineItems
 
 handleGetOneLineItem :: (IsLineItemHandler r) => Int -> Sem r (ApiResponse LineItem)
 handleGetOneLineItem itemId = do
-  logDebug [i|handleGetOneLineItem #{itemId}|]
   mLineItem <- getLineItemById $ fromIntegral itemId
   case mLineItem of
-    Nothing -> logDebug "notfound...." >> throwNotFound [i|LineItem #{itemId} not found|]
+    Nothing -> throwNotFound [i|LineItem #{itemId} not found|]
     Just item -> pure (ok item)
 
 handleCreateLineItem
   :: (IsLineItemHandler r) => NewLineItem -> Sem r (ApiResponse LineItem)
 handleCreateLineItem body = do
-  logDebug [i|handleCreateLineItem #{body}|]
   createLineItem body >>= \case
     Nothing -> throwDBError "Failed to store LineItem"
     Just item -> pure $ ok item
@@ -70,7 +68,6 @@ handleCreateLineItem body = do
 handleUpdateLineItem
   :: (IsLineItemHandler r) => Int -> NewLineItem -> Sem r (ApiResponse LineItem)
 handleUpdateLineItem lineItemId body = do
-  logDebug [i|handleUpdateLineItem #{lineItemId} with #{body}|]
   lineItem <- updateLineItem (fromIntegral lineItemId) body
   case lineItem of
     Nothing -> throwNotFound [i|LineItem #{lineItemId} not found|]
@@ -78,7 +75,6 @@ handleUpdateLineItem lineItemId body = do
 
 handleDeleteLineItem :: (IsLineItemHandler r) => Int -> Sem r (ApiResponse Bool)
 handleDeleteLineItem lineItemId = do
-  logDebug [i|handleDeleteLineItem #{lineItemId}|]
   deleted <- deleteLineItem $ fromIntegral lineItemId
   if deleted
     then pure (ok True)
@@ -86,7 +82,7 @@ handleDeleteLineItem lineItemId = do
 
 handleGetAllUsers :: (IsUserHandler r) => Sem r (ApiResponse [User])
 handleGetAllUsers =
-  logDebug "handleGetAllUsers" >> (ok <$> getAllUsers)
+  ok <$> getAllUsers
 
 handleUpdateUser :: (IsUserHandler r) => Int -> NewUser -> Sem r (ApiResponse User)
 handleUpdateUser userId body = do
