@@ -33,9 +33,9 @@ import Database.Beam.Sqlite (
   Sqlite,
   insertReturning,
   runBeamSqliteDebug,
-  runInsertReturningList,
+  runSqliteInsertReturningList,
  )
-import Database.Beam.Sqlite.Connection (deleteReturning, runDeleteReturningList)
+import Database.Beam.Sqlite.Connection (deleteReturning, runSqliteDeleteReturningList)
 import Effects.Config (AppConfig, getPool)
 import Effects.Error (AppError)
 import Log.Logger (Logger, logDebug)
@@ -98,7 +98,7 @@ createLineItemDB'
   :: (MonadBeam Sqlite m, FromBackendRow Sqlite LineItem) => NewLineItem -> m (Maybe LineItem)
 createLineItemDB' NewLineItem{..} =
   listToMaybe
-    <$> runInsertReturningList
+    <$> runSqliteInsertReturningList
       ( insertReturning (shoppingCartLineItems shoppingCartDB) $
           insertExpressions
             [ LineItem
@@ -136,7 +136,7 @@ updateLineItemDB lineItemId newLineItem = do
 deleteLineItemDB' :: (MonadBeam Sqlite m) => Int32 -> m Bool
 deleteLineItemDB' lid =
   not . null
-    <$> runDeleteReturningList
+    <$> runSqliteDeleteReturningList
       ( deleteReturning
           (shoppingCartLineItems shoppingCartDB)
           (\lineItem -> _itemId lineItem ==. val_ lid)

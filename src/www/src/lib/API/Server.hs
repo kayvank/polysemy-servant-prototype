@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module API.Server where
 
 import API.ApiResponse (err)
@@ -69,6 +71,7 @@ lowerToHandler config action =
       Left (ValidationError msg) -> throwError $ err400{errBody = encode (err msg)}
       Left (DatabaseError msg) -> throwError $ err500{errBody = encode (err msg)}
       Right x -> pure x
+      _ -> throwError $ err500{errBody = encode (err "Unknown error")}
 
 -- | Convert our Sem server to a Servant Handler
 server :: AppConfig -> Server API

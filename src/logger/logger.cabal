@@ -47,8 +47,8 @@ library
     , aeson
     , data-default
     , polysemy
-    , string-interpolate
     , text
+    , time
 
   hs-source-dirs:   src/lib
   default-language: GHC2021
