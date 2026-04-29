@@ -54,10 +54,12 @@ curl -i  -X GET "http://localhost:8080/items"
 curl -i  -X DELETE "http://localhost:8080/items/1"
 ```
 ## TODO
-- [ ] Config should be Reader Monad
-- [ ] use beam for Db stuff
+- [x] Config should be Reader Monad
+- [x] use beam for Db stuff
 - [x] add github action
-- [ ] Logging is incomplete
+- [ ] add github action for nix build
+- [x] JSON Logging
+- [ ] async Logging
 - [ ] More domain objects
 - [ ] Rename the project
 - [ ] Add a servant client

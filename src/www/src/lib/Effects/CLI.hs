@@ -1,16 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
-{-# LANGUAGE RecordWildCards #-}
 
 module Effects.CLI where
 
 import Data.Char (toLower)
-import Data.String.Interpolate (i)
 import Data.Text qualified as Text
 import Effects.Config (
   AppConfig,
-  AppName (AppName),
-  Config (Config),
+  AppName (AppName, unAppName),
+  Config (Config, _configAppName),
   ConfigInput (..),
   ConnectionString (ConnectionString),
   NetworkConfig (NetworkConfig),
@@ -18,6 +15,9 @@ import Effects.Config (
  )
 import Log.LogLevel (LogLevel (..))
 import Log.Logger (Logger, logInfo, runLoggerIO)
+import Log.TraceEvent (
+  TraceEvent (TraceEvent, context, event, message, service),
+ )
 import Options.Applicative (
   Alternative ((<|>)),
   Parser,
@@ -137,7 +137,13 @@ runCli =
 appConfigFromCli :: (Members '[Embed IO, Logger] r) => Sem r AppConfig
 appConfigFromCli = do
   config <- runCli
-  logInfo [i|Loaded config: #{config}|]
+  logInfo
+    TraceEvent
+      { message = Just "Application Configuration Loaded"
+      , context = "Configuration"
+      , event = config
+      , service = unAppName $ _configAppName config
+      }
   embed $ configToAppConfig config
 
 appConfigIO :: IO AppConfig
