@@ -69,9 +69,9 @@ library
     , string-interpolate
     , text
 
-  ----------- TODO --------------
-  -- ideally we watn 0.7.0, however, that version is not currently available on nix as of 01/May/2026
-  ----------- TODO --------------
+  -- ----------- TODO --------------
+  -- ideally we want 0.7.0, however, that version is not currently available in nix
+  -- ----------- TODO --------------
   hs-source-dirs:   src/lib
   default-language: GHC2021
   ghc-options:
