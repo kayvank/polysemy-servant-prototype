@@ -1,4 +1,4 @@
-# Revision history for www
+# Revision history for logger
 
 ## 0.1.0.0 -- YYYY-mm-dd
 
