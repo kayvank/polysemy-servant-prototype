@@ -1,17 +1,17 @@
-name: Haskell build and test
+name: Linux Haskell CI
 
 on:
   push:
     branches: [ "main" ]
     paths:
       - '**'
-      - '.github/workflows/polysemy-servant-prototype-linux-ci.yml'
+      - '.github/workflows/linux-ci.yml'
 
   pull_request:
     branches: [ "**" ]
     paths:
       - '**'
-      - '.github/workflows/polysemy-servant-prototype-linux-ci.yml'
+      - '.github/workflows/linux-ci.yml'
 
 jobs:
   build:

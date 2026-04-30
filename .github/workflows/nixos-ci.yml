@@ -1,0 +1,38 @@
+name: NixOS Haskell CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - '**'
+      - '.github/workflows/nixos-ci.yml'
+
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - '**'
+      - '.github/workflows/nixos-ci.yml'
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+    - uses: actions/checkout@v4
+
+    # Installs Nix on the runner
+    - uses: cachix/install-nix-action@v30
+
+    # Configures Cachix to pull from and push to your binary cache
+    - uses: cachix/cachix-action@v15
+      with:
+        name: q2io-dev
+        # Auth token is required for pushing built binaries to the cache
+        authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+
+    # Any subsequent Nix commands will now use the cache
+    - run:
+        nix build '.#www-server'

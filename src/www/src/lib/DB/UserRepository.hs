@@ -30,7 +30,7 @@ import Database.Beam.Sqlite (
   Sqlite,
   insertReturning,
   runBeamSqlite,
-  runSqliteInsertReturningList,
+  runInsertReturningList,
  )
 import Effects.Config (AppConfig, getPool)
 import Effects.Error (AppError)
@@ -76,7 +76,7 @@ createUserDB user = do
 createUserDB' :: (MonadBeam Sqlite m) => NewUser -> m (Maybe User)
 createUserDB' NewUser{..} =
   listToMaybe
-    <$> runSqliteInsertReturningList
+    <$> runInsertReturningList
       ( insertReturning (shoppingCartUsers shoppingCartDB) $
           insertExpressions
             [ User

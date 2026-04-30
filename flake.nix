@@ -37,11 +37,17 @@
           hpkgs = pkgs.haskell.packages.ghc910.override {
             overrides = final: prev: {
               www-server = final.callCabal2nix "www-server" ./src/www { };
+              logger = final.callCabal2nix "logger" ./src/logger { };
+              all-project = final.callCabal2nix "all-project" ./. { };
             };
           };
         in
         rec {
-          packages.www-server = hpkgs.www-server;
+          packages = {
+            www-server = hpkgs.www-server;
+            logger = hpkgs.logger;
+            all-project = hpkgs.all-project;
+          };
 
           checks.pre-commit-check = hook.run {
             src = self;
@@ -101,9 +107,12 @@
   nixConfig = {
     extra-substituters = [
       "https://cache.iog.io"
+      "https://q2io-dev.cachix.org"
+
     ];
     extra-trusted-public-keys = [
       "hydra.iohk.io:f/Ea+s+dFdN+3Y/G+FDgSq+a5NEWhJGzdjvKNGv0/EQ="
+      "q2io-dev.cachix.org-1:mF3p2Tp1kRuxicav9S42Hk1DDc7hQ/rFctxPBnlHtmk="
     ];
     allow-import-from-derivation = true;
     accept-flake-config = true;
