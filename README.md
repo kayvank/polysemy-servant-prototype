@@ -73,7 +73,7 @@ curl -i  -X DELETE "http://localhost:8080/items/1"
 - [Polysemy](https://hackage.haskell.org/package/polysemy)
 - [Beam](https://haskell-beam.github.io/beam/)
 - [Beam migration blog, William Yao](https://williamyaoh.com/posts/2019-09-27-figuring-out-beam-migrations.html)
-- [Servant combinators blog, Willian Yoa](https://williamyaoh.com/posts/2023-02-28-writing-servant-combinators.html)
+- [Servant combinators blog, William Yao](https://williamyaoh.com/posts/2023-02-28-writing-servant-combinators.html)
 - [Abstractions in Context](https://williamyaoh.gumroad.com/l/CLyzT)
 - [Parallel and Concurrent Programming in Haskell](https://simonmar.github.io/pages/pcph.html)
 
