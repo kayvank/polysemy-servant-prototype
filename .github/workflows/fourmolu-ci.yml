@@ -5,13 +5,13 @@ on:
     branches: [ "main" ]
     paths:
       - '**'
-      - '.github/workflows/polysemy-servant-prototype-fourmolu-ci.yml'
+      - '.github/workflows/fourmolu-ci.yml'
 
   pull_request:
     branches: [ "**" ]
     paths:
       - '**'
-      - '.github/workflows/polysemy-servant-prototype-fourmolu-ci.yml'
+      - '.github/workflows/fourmolu-ci.yml'
 
 jobs:
   fourmolu-check:

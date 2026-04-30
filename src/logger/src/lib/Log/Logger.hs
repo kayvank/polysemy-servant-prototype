@@ -38,16 +38,16 @@ makeSem ''Logger
 runLoggerIO :: (Member (Embed IO) r) => Sem (Logger ': r) a -> Sem r a
 runLoggerIO = interpret $ \case
   LogDebug msg ->
-    toLogEvent (ServiceName "dev") DEBUG msg
+    toLogEvent DEBUG msg
       >>= embed . C8.putStrLn . Aeson.encode
   LogInfo msg ->
-    toLogEvent (ServiceName "dev") INFO msg
+    toLogEvent INFO msg
       >>= embed . C8.putStrLn . Aeson.encode
   LogWarn msg ->
-    toLogEvent (ServiceName "dev") WARN msg
+    toLogEvent WARN msg
       >>= embed . C8.putStrLn . Aeson.encode
   LogError msg ->
-    toLogEvent (ServiceName "dev") ERROR msg
+    toLogEvent ERROR msg
       >>= embed . C8.putStrLn . Aeson.encode
 
 newtype ServiceName = ServiceName Text
@@ -78,8 +78,8 @@ instance (ToJSON ev) => ToJSON (LogEvent ev) where
       ]
 
 toLogEvent
-  :: (Member (Embed IO) r) => ServiceName -> LogLevel -> ev -> Sem r (LogEvent ev)
-toLogEvent serviceName logLevel event = do
+  :: (Member (Embed IO) r) => LogLevel -> ev -> Sem r (LogEvent ev)
+toLogEvent logLevel event = do
   timestamp <- embed getCurrentTime
   threadId <- mkThreadId <$> embed myThreadId
   let logEnvelope = LogEnvelope{..}
@@ -90,8 +90,8 @@ toLogEvent serviceName logLevel event = do
     mkThreadId = Text.pack . show
 
 -- | Pure version of toLogEvent for testing purposes
-toLogEventPure :: ServiceName -> LogLevel -> ev -> LogEvent ev
-toLogEventPure serviceName logLevel event =
+toLogEventPure :: LogLevel -> ev -> LogEvent ev
+toLogEventPure logLevel event =
   let
     timestamp :: UTCTime
     timestamp = read "2026-04-28 17:48:08.00367981 UTC"
