@@ -40,7 +40,11 @@ common project-config
 
 library
   import:           base,project-config
-  exposed-modules:  Polysemy.Log.Internal.Logging
+  exposed-modules:
+    Polysemy.Log.Internal.LogConfig
+    Polysemy.Log.Internal.Logging
+    Polysemy.Log.Internal.LogMsg
+
   build-depends:
     , aeson
     , data-default
@@ -66,8 +70,10 @@ executable structure-logging
   -- other-extensions:
   build-depends:
     , aeson
+    , data-default
     , polysemy
     , structured-logger
+    , text
 
   hs-source-dirs: src/bin
   ghc-options:

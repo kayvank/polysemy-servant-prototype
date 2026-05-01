@@ -2,19 +2,32 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Polysemy.Log.Internal.Logging where
 
-import Control.Monad.IO.Class
-import Data.Aeson
-import Data.Aeson.Types (Pair (..))
-import Data.String
-import Data.Text (Text)
-import Data.Time.Clock
-import Data.Time.Format
-import GHC.Generics (Generic)
-import Polysemy
-import Polysemy.Resource
+import Control.Monad (when)
+import Data.Aeson (
+  KeyValue ((.=)),
+ )
+import Data.Time.Clock (getCurrentTime)
+import Data.Time.Format (defaultTimeLocale, formatTime)
+import Polysemy (
+  Embed,
+  Member,
+  Members,
+  Sem,
+  embed,
+  interpret,
+  send,
+ )
+import Polysemy.Log.Internal.LogConfig (
+  LogConfig (..),
+  LogSeverity (..),
+ )
+import Polysemy.Log.Internal.LogMsg (LogMsg (..))
+import Polysemy.Reader (Reader, ask)
+import Polysemy.Resource (Resource, bracket)
 import System.Log.FastLogger (
   LogType' (LogStdout),
   ToLogStr (..),
@@ -22,49 +35,42 @@ import System.Log.FastLogger (
   newFastLogger,
  )
 
-data LogMsg = Text :# [Pair]
-  deriving (Eq, Show)
-
-instance IsString LogMsg where
-  fromString msg = fromString msg :# []
-
-instance ToJSON LogMsg where
-  toJSON (msg :# ps) = object $ ps <> ["message" .= msg]
-
-instance ToLogStr LogMsg where
-  toLogStr msg = toLogStr (encode msg) <> "\n"
-
-instance Semigroup LogMsg where
-  "" :# ps0 <> msg1 :# ps1 = msg1 :# (ps0 <> ps1)
-  msg0 :# ps0 <> "" :# ps1 = msg0 :# (ps0 <> ps1)
-  msg0 :# ps0 <> msg1 :# ps1 = (msg0 <> " - " <> msg1) :# (ps0 <> ps1)
-
-instance Monoid LogMsg where mempty = ""
-
-(#+) :: LogMsg -> [Pair] -> LogMsg
-(#+) (msg :# ps0) ps1 = msg :# (ps0 <> ps1)
-
+-- | A logger that can log messages of type 'LogMsg' to the console. It wraps a function that takes a 'LogMsg' and performs an 'IO' action to log it.
 newtype Logger = Logger (LogMsg -> IO ())
 
+-- | A logger that can log messages of type 'LogMsg' to the console.
 newLogger :: (Members '[Embed IO] r) => Sem r (Logger, Sem r ())
 newLogger = do
   (fastLogger, cleanUp) <- embed $ newFastLogger $ LogStdout defaultBufSize
   pure (Logger (fastLogger . toLogStr @LogMsg), embed cleanUp)
 
+-- | A helper function that creates a logger and ensures that it is properly cleaned up after use.
 withLogger :: (Members '[Embed IO, Resource] r) => (Logger -> Sem r ()) -> Sem r ()
 withLogger go = bracket newLogger snd (go . fst)
 
-logSem :: (Member (Embed IO) r) => Text -> Logger -> LogMsg -> Sem r ()
+-- | A helper function that logs a message with a given log level using the provided logger. It formats the log message with a timestamp and a correlation ID (if available) before logging it.
+logSem
+  :: (Members '[Embed IO, Polysemy.Reader.Reader LogConfig] r)
+  => LogSeverity
+  -> Logger
+  -> LogMsg
+  -> Sem r ()
 logSem lvl (Logger ls) msg = do
-  t <- formatTime defaultTimeLocale "%y-%m-%dT%H:%M:%S%03QZ" <$> embed getCurrentTime
-  let bmsg =
-        ""
-          :# [ "correlation-id" .= ("no-correlation-id" :: Text)
-             , "timestamp" .= t
-             , "level" .= lvl
-             ]
-  embed $ ls $ bmsg <> msg
+  LogConfig{..} <- Polysemy.Reader.ask
+  when (logSeverity <= lvl) $ do
+    t <- formatTime defaultTimeLocale "%y-%m-%dT%H:%M:%S%03QZ" <$> embed getCurrentTime
+    let bmsg =
+          ""
+            :# [ "correlation-id" .= logCorrelationId -- ("no-correlation-id" :: Text)
+               , "timestamp" .= t
+               , "level" .= lvl
+               ]
+    embed $ ls $ bmsg <> msg
+  pure ()
 
+{- | The 'SLogger' effect represents a logging effect that can log messages of type 'LogMsg' at different log levels (debug, info, warn, error, fatal).
+    Each constructor corresponds to a log level and takes a 'LogMsg' as an argument.
+-}
 data SLogger m a where
   LogDebug :: LogMsg -> SLogger m ()
   LogInfo :: LogMsg -> SLogger m ()
@@ -79,72 +85,27 @@ logInfo :: (Member SLogger r) => LogMsg -> Sem r ()
 logInfo msg = send (LogInfo msg :: SLogger (Sem r) ())
 
 logWarn :: (Member SLogger r) => LogMsg -> Sem r ()
-logWarn msg = send (LogWarn msg :: SLogger (Sem r) ()) -- undefined
+logWarn msg = send (LogWarn msg :: SLogger (Sem r) ())
 
 logError :: (Member SLogger r) => LogMsg -> Sem r ()
-logError msg = send (LogError msg :: SLogger (Sem r) ()) -- undefined
+logError msg = send (LogError msg :: SLogger (Sem r) ())
 
 logFatal :: (Member SLogger r) => LogMsg -> Sem r ()
-logFatal msg = send (LogFatal msg :: SLogger (Sem r) ()) -- undefined
+logFatal msg = send (LogFatal msg :: SLogger (Sem r) ())
 
-logs :: (Member (Embed IO) r) => Logger -> Sem r ()
-logs logger = do
-  debugIO logger "a log line"
-  infoIO logger $ "another log line" #+ ["extras" .= (42 :: Int)]
-  infoIO logger $ "User object logging" #+ ["payload" .= user]
-  infoIO logger $ "User object logging" #+ ["payload" .= (User2 "Abass")]
-
-logs' :: (Members '[Embed IO, SLogger] r) => Sem r ()
-logs' = do
-  logDebug "a log line"
-  logInfo $ "another log line" #+ ["extras" .= (42 :: Int)]
-  logWarn $ "User object logging" #+ ["payload" .= user]
-  logError $ "User object logging" #+ ["payload" .= (User2 "Abass")]
-  logFatal $ "User object logging" #+ ["payload" .= (User2 "Abass")]
-
-runLogger' :: (Members '[Embed IO] r) => Sem r ()
-runLogger' = runResource $ withLogger $ \logger -> logs logger
-
-runLogger :: (Members '[Embed IO] r) => (Logger -> Sem (Resource : r) ()) -> Sem r ()
-runLogger l = runResource $ withLogger $ \logger -> l logger
-
-runLogger'' :: (Members '[Embed IO, Resource] r) => Sem (SLogger ': r) () -> Sem r ()
-runLogger'' = do
+-- | The 'runLogger' function interprets the 'SLogger' effect by providing an implementation for each log level. It uses the 'withLogger' helper function to create a logger and ensures that it is properly cleaned up after use. For each log level, it formats the log message with a timestamp and a correlation ID (if available) before logging it using the 'logSem' helper function.
+runLogger
+  :: (Members '[Embed IO, Resource, Polysemy.Reader.Reader LogConfig] r)
+  => Sem (SLogger ': r) () -> Sem r ()
+runLogger = do
   interpret $ \case
     LogDebug logMsg ->
-      -- runResource $
-      withLogger $ \logger -> logSem "debug" logger logMsg
+      withLogger $ \logger -> logSem DEBUG logger logMsg
     LogInfo logMsg ->
-      -- runResource $
-      withLogger $ \logger -> logSem "info" logger logMsg
+      withLogger $ \logger -> logSem INFO logger logMsg
     LogWarn logMsg ->
-      -- runResource $
-      withLogger $ \logger -> logSem "warn" logger logMsg
+      withLogger $ \logger -> logSem WARN logger logMsg
     LogError logMsg ->
-      -- runResource $
-      withLogger $ \logger -> logSem "error" logger logMsg
+      withLogger $ \logger -> logSem ERROR logger logMsg
     LogFatal logMsg ->
-      -- runResource $
-      withLogger $ \logger -> logSem "fatal" logger logMsg
-
-debugIO, infoIO, warnIO, errIO, fatalIO :: (Member (Embed IO) r) => Logger -> LogMsg -> Sem r ()
-debugIO = logSem "debug"
-infoIO = logSem "info"
-warnIO = logSem "warn"
-errIO = logSem "error"
-fatalIO = logSem "fatal"
-
-data User = User
-  { name :: Text
-  , age :: Int
-  }
-  deriving (Show, Generic)
-
-instance ToJSON User
-
-newtype User2 = User2 Text
-  deriving (Show)
-  deriving (IsString) via Text
-  deriving (ToJSON) via Text
-
-user = User "SpecialUser" 21
+      withLogger $ \logger -> logSem FATAL logger logMsg
