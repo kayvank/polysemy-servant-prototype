@@ -1,5 +1,6 @@
 packages: ./src/www
 packages: ./src/logger
+packages: ./src/structured-logger
 
 -- Required for Polysemy's type-level magic
 package polysemy

@@ -1,0 +1,96 @@
+cabal-version:   3.12
+name:            structured-logger
+version:         0.1.0.0
+synopsis:        structured logging using polysemy
+
+-- description:
+homepage:        https://kayvank.github.io/cv
+license:         BSD-3-Clause
+license-file:    LICENSE
+author:          Kayvan Kazeminejad
+maintainer:      kayvan@q2io.com
+
+-- copyright:
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+-- extra-source-files:
+
+common base
+  build-depends: base >=4.9 && <5
+
+common project-config
+  default-language:   GHC2021
+  default-extensions:
+    DataKinds
+    DeriveGeneric
+    FlexibleContexts
+    GADTs
+    LambdaCase
+    PolyKinds
+    RankNTypes
+    ScopedTypeVariables
+    TemplateHaskell
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+
+-- -ddump-splices
+-- -ddump-deriv
+
+library
+  import:           base,project-config
+  exposed-modules:  Polysemy.Log.Internal.Logging
+  build-depends:
+    , aeson
+    , data-default
+    , exceptions
+    , fast-logger
+    , polysemy
+    , string-interpolate
+    , text
+    , time
+
+  hs-source-dirs:   src/lib
+  default-language: GHC2021
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing
+
+executable structure-logging
+  import:         base,project-config
+  main-is:        Main.hs
+
+  -- other-modules:
+  -- other-extensions:
+  build-depends:
+    , aeson
+    , polysemy
+    , structured-logger
+
+  hs-source-dirs: src/bin
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
+
+test-suite structured-logging-test
+  import:         base,project-config
+
+  -- other-modules:
+  -- other-extensions:
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is:        Spec.hs
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
+    -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
+
+  -- other-modules:  Tests.NaiveSpecs
+  build-depends:
+    , hspec
+    , structured-logger
+    , tasty
+    , tasty-hspec
