@@ -90,14 +90,16 @@ test-suite structured-logging-test
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
   main-is:        Spec.hs
+  other-modules:  Tests.NaiveSpecs
   ghc-options:
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
     -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
 
   -- other-modules:  Tests.NaiveSpecs
-  build-depends:  structured-logger
+  build-depends:
+    , hspec
+    , tasty
+    , tasty-hspec
 
--- , hspec
--- , tasty
--- , tasty-hspec
+-- , structured-logger
