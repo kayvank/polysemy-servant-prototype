@@ -4,17 +4,26 @@
 
 module Main where
 
-import Data.Aeson
-import Data.Default
+import Data.Aeson (KeyValue ((.=)), ToJSON)
+import Data.Default (Default (def))
 import Data.Function ((&))
-import Data.String
+import Data.String (IsString)
 import Data.Text (Text)
-import Data.Word
+import Data.Word (Word32)
 import GHC.Generics (Generic)
-import Polysemy
-import Polysemy.Log.Logging
-import Polysemy.Reader (runReader)
-import Polysemy.Resource
+import Polysemy (Embed, Members, Sem, runM)
+import Polysemy.Log.Logging (
+  LogConfig,
+  SLogger,
+  logDebug,
+  logError,
+  logFatal,
+  logInfo,
+  logWarn,
+  runLogger,
+  (#+),
+ )
+import Polysemy.Resource (runResource)
 
 data Address = Address
   { houseNumber :: Text
@@ -47,7 +56,10 @@ newtype User2 = User2 Text
   deriving (IsString) via Text
   deriving (ToJSON) via Text
 
+userAddress :: Address
 userAddress = Address "2303" "Third Street" "San Francisco" 94124
+
+user :: User
 user = User "SpecialUser" 21 userAddress
 
 main :: IO ()

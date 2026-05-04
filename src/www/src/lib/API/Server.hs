@@ -84,7 +84,8 @@ lowerToHandler config action =
         & runM -- Embed IO -> IO
     )
     >>= \case
-      Left (NotFound msg) -> throwError $ err404{errBody = encode (err msg)}
+      Left (NotFound msg) ->
+        throwError $ err404{errBody = encode (err msg)}
       Left (ValidationError msg) -> throwError $ err400{errBody = encode (err msg)}
       Left (DatabaseError msg) -> throwError $ err500{errBody = encode (err msg)}
       Right x -> pure x

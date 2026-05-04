@@ -2,7 +2,7 @@
 
 module CLI where
 
-import Data.Aeson (KeyValue ((.=)), ToJSON, encode)
+import Data.Aeson (encode)
 import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Char (toLower)
 import Data.Text qualified as Text
@@ -31,10 +31,10 @@ import Options.Applicative (
   value,
   (<**>),
  )
-import Polysemy (Embed, Member, Members, Sem, embed, runM)
-import Polysemy.Log.Logging
-import Polysemy.Trace
-import Polysemy.Trace (traceToStderr)
+import Polysemy.Log.Logging (
+  LogCorrelationId (..),
+  LogSeverity (DEBUG, ERROR, INFO, WARN),
+ )
 
 fileInput :: Parser ConfigInput
 fileInput =

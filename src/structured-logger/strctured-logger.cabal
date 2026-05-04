@@ -49,13 +49,13 @@ library
   build-depends:
     , aeson
     , data-default
-    , exceptions
     , fast-logger
     , polysemy
-    , string-interpolate
     , text
     , time
 
+  -- , exceptions
+  -- , string-interpolate
   hs-source-dirs:   src/lib
   default-language: GHC2021
   ghc-options:
@@ -96,8 +96,8 @@ test-suite structured-logging-test
     -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
 
   -- other-modules:  Tests.NaiveSpecs
-  build-depends:
-    , hspec
-    , structured-logger
-    , tasty
-    , tasty-hspec
+  build-depends:  structured-logger
+
+-- , hspec
+-- , tasty
+-- , tasty-hspec

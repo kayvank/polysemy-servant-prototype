@@ -1,6 +1,7 @@
 packages: ./src/www
-packages: ./src/logger
 packages: ./src/structured-logger
+          -- TODO this project is deprecated and needs to be removed
+-- packages: ./src/logger
 
 -- Required for Polysemy's type-level magic
 package polysemy

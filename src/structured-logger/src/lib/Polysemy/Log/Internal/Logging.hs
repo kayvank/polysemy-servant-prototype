@@ -19,6 +19,7 @@ module Polysemy.Log.Internal.Logging (
   -- ^ The 'runLogger' function interprets the 'SLogger' effect by providing an implementation for each log level. It uses the 'withLogger' helper function to create a logger and ensures that it is properly cleaned up after use. For each log level, it formats the log message with a timestamp and a correlation ID (if available) before logging it using the 'logSem' helper function.
   runLogger',
   -- ^ Like 'runLogger' but used a Reader to get the LogConfig instead of passing it as an argument.
+  runDefaultLogger,
 ) where
 
 import Control.Monad (when)
@@ -34,7 +35,6 @@ import Polysemy (
   Sem,
   embed,
   interpret,
-  interpretH,
   send,
  )
 import Polysemy.Log.Internal.LogConfig (
@@ -45,9 +45,8 @@ import Polysemy.Log.Internal.LogConfig (
 import Polysemy.Log.Internal.LogMsg (LogMsg (..))
 import Polysemy.Reader (Reader, ask, runReader)
 import Polysemy.Resource
-import Polysemy.Resource (Resource, bracket)
 import System.Log.FastLogger (
-  LogType' (LogCallback, LogStdout),
+  LogType' (LogStdout),
   ToLogStr (..),
   defaultBufSize,
   newFastLogger,
@@ -165,7 +164,5 @@ runLogger logConfig =
     LogFatal logMsg ->
       withLogger $ \logger -> logSem logConfig FATAL logger logMsg
 
-runDefaultLogger
-  :: (Members '[Resource, SLogger, Embed IO] r)
-  => Sem (Reader LogConfig ': r) a -> Sem r a
+runDefaultLogger :: Sem (Reader LogConfig ': r) a -> Sem r a
 runDefaultLogger = Polysemy.Reader.runReader (LogConfig INFO (LogCorrelationId "Default-CorrelatioID"))

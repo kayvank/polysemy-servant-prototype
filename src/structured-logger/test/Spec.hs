@@ -1,4 +1,4 @@
 module Spec where
 
-main :: IO
-main = "no tests availble at this time!"
+main :: IO ()
+main = print "no tests availble at this time!"

@@ -88,10 +88,7 @@ executable www
 
   -- other-modules:
   -- other-extensions:
-  build-depends:
-    , data-default
-    , www
-
+  build-depends:  www
   hs-source-dirs: src/bin
   ghc-options:
     -Wall -Wcompat -Wincomplete-record-updates
@@ -106,6 +103,7 @@ test-suite www-test
   type:           exitcode-stdio-1.0
   hs-source-dirs: test
   main-is:        Spec.hs
+  other-modules:  Tests.NaiveSpecs
   ghc-options:
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
