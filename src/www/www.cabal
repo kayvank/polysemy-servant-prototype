@@ -45,10 +45,10 @@ library
     API.Handlers
     API.Routes
     API.Server
+    CLI
     DB.Database
     DB.LineItemRepository
     DB.UserRepository
-    Effects.CLI
     Effects.Config
     Effects.Error
     Model.LineItem
@@ -59,15 +59,18 @@ library
     , beam-core
     , beam-migrate
     , beam-sqlite           >=0.5.4.0 && <0.7
+    , bytestring
     , data-default
-    , logger
     , optparse-applicative
     , polysemy
     , resource-pool
     , servant-server
     , sqlite-simple
     , string-interpolate
+    , structured-logger
     , text
+    , wai-extra
+    , warp
 
   -- ----------- TODO --------------
   -- ideally we want 0.7.0, however, that version is not currently available in nix
@@ -87,9 +90,6 @@ executable www
   -- other-extensions:
   build-depends:
     , data-default
-    , servant-server
-    , wai-extra
-    , warp
     , www
 
   hs-source-dirs: src/bin

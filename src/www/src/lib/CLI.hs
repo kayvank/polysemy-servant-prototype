@@ -1,23 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Effects.CLI where
+module CLI where
 
+import Data.Aeson (KeyValue ((.=)), ToJSON, encode)
+import Data.ByteString.Lazy.Char8 qualified as BSL
 import Data.Char (toLower)
 import Data.Text qualified as Text
-import Effects.Config (
-  AppConfig,
-  AppName (AppName, unAppName),
-  Config (Config, _configAppName),
-  ConfigInput (..),
-  ConnectionString (ConnectionString),
-  NetworkConfig (NetworkConfig),
-  configToAppConfig,
- )
-import Log.LogLevel (LogLevel (..))
-import Log.Logger (Logger, logInfo, runLoggerIO)
-import Log.TraceEvent (
-  TraceEvent (TraceEvent, context, event, message, service),
- )
+import Effects.Config
 import Options.Applicative (
   Alternative ((<|>)),
   Parser,
@@ -43,6 +32,9 @@ import Options.Applicative (
   (<**>),
  )
 import Polysemy (Embed, Member, Members, Sem, embed, runM)
+import Polysemy.Log.Logging
+import Polysemy.Trace
+import Polysemy.Trace (traceToStderr)
 
 fileInput :: Parser ConfigInput
 fileInput =
@@ -63,7 +55,7 @@ stdInput =
 inputParser :: Parser ConfigInput
 inputParser = fileInput <|> stdInput
 
-parseLogLevel :: String -> Either String LogLevel
+parseLogLevel :: String -> Either String LogSeverity
 parseLogLevel s = case map toLower s of
   "debug" -> Right DEBUG
   "info" -> Right INFO
@@ -71,10 +63,10 @@ parseLogLevel s = case map toLower s of
   "error" -> Right ERROR
   _ -> Left "Valid levels: debug, info, warning, error"
 
-logLevelReader :: ReadM LogLevel
+logLevelReader :: ReadM LogSeverity
 logLevelReader = eitherReader parseLogLevel
 
-logLevelParser :: Parser LogLevel
+logLevelParser :: Parser LogSeverity
 logLevelParser =
   option
     logLevelReader
@@ -84,6 +76,16 @@ logLevelParser =
         <> value INFO -- Default value
         <> showDefault
     )
+logCorrelationIdParser :: Parser LogCorrelationId
+logCorrelationIdParser =
+  LogCorrelationId . Text.pack
+    <$> strOption
+      ( long "correlation-id"
+          <> metavar "CORRELEATION-ID"
+          <> help "Correlation ID used to group logs"
+          <> value "default-correlation-id"
+          <> showDefault
+      )
 
 connectionStringParser :: Parser ConnectionString
 connectionStringParser =
@@ -109,19 +111,18 @@ networkConfigParser =
           <> showDefault
       )
 
-appNameParser :: Parser AppName
-appNameParser = pure (AppName "MyApp")
+logConfigParser :: Parser LogConfig
+logConfigParser = LogConfig <$> logLevelParser <*> logCorrelationIdParser
 
 configParser :: Parser Config
 configParser =
   Config
     <$> connectionStringParser
     <*> networkConfigParser
-    <*> appNameParser
-    <*> logLevelParser
+    <*> logConfigParser
 
-runCli :: (Member (Embed IO) r) => Sem r Config
-runCli =
+runCli :: IO AppConfig
+runCli = do
   let
     opts :: ParserInfo Config
     opts =
@@ -131,20 +132,9 @@ runCli =
             <> progDesc "Run the application with the specified configuration"
             <> header "MyApp - a sample application demonstrating Polysemy effects and Beam with Sqlite backend"
         )
-   in
-    embed $ execParser opts
-
-appConfigFromCli :: (Members '[Embed IO, Logger] r) => Sem r AppConfig
-appConfigFromCli = do
-  config <- runCli
-  logInfo
-    TraceEvent
-      { message = Just "Application Configuration Loaded"
-      , context = "Configuration"
-      , event = config
-      , service = unAppName $ _configAppName config
-      }
-  embed $ configToAppConfig config
+  config <- execParser opts
+  BSL.putStrLn (encode config)
+  configToAppConfig config
 
 appConfigIO :: IO AppConfig
-appConfigIO = runM $ runLoggerIO appConfigFromCli
+appConfigIO = runCli

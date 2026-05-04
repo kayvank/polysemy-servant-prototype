@@ -4,7 +4,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | This module defines the 'LogMsg' data type, which represents a log message consisting of a text message and a list of key-value pairs for additional context. It provides instances for 'IsString', 'ToJSON', 'ToLogStr', 'Semigroup', and 'Monoid', allowing for easy construction, JSON encoding, and combination of log messages. The '(#+)' operator is defined to add key-value pairs to an existing log message.
-module Polysemy.Log.Internal.LogMsg where
+module Polysemy.Log.Internal.LogMsg (
+  -- | The 'LogMsg' data type represents a log message consisting of a text message and a list of key-value pairs for additional context. It provides instances for 'IsString', 'ToJSON', 'ToLogStr', 'Semigroup', and 'Monoid', allowing for easy construction, JSON encoding, and combination of log messages. The '(#+)' operator is defined to add key-value pairs to an existing log message.
+  LogMsg (..),
+  -- | The '(#+)' operator allows us to add key-value pairs to an existing log message.
+  (#+),
+) where
 
 import Data.Aeson (
   KeyValue ((.=)),

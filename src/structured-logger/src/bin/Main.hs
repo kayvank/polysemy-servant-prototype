@@ -12,9 +12,7 @@ import Data.Text (Text)
 import Data.Word
 import GHC.Generics (Generic)
 import Polysemy
-import Polysemy.Log.Internal.LogConfig (LogConfig (LogConfig))
-import Polysemy.Log.Internal.LogMsg
-import Polysemy.Log.Internal.Logging
+import Polysemy.Log.Logging
 import Polysemy.Reader (runReader)
 import Polysemy.Resource
 
@@ -55,7 +53,6 @@ user = User "SpecialUser" 21 userAddress
 main :: IO ()
 main =
   logs
-    & runLogger
-    & runReader (def @LogConfig)
+    & runLogger (def @LogConfig)
     & runResource
     & runM

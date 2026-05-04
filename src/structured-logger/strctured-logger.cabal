@@ -44,6 +44,7 @@ library
     Polysemy.Log.Internal.LogConfig
     Polysemy.Log.Internal.Logging
     Polysemy.Log.Internal.LogMsg
+    Polysemy.Log.Logging
 
   build-depends:
     , aeson
