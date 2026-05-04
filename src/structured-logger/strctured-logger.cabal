@@ -1,7 +1,7 @@
 cabal-version:   3.12
-name:            www
+name:            structured-logger
 version:         0.1.0.0
-synopsis:        A polysemy servant http application
+synopsis:        structured logging using polysemy
 
 -- description:
 homepage:        https://kayvank.github.io/cv
@@ -41,40 +41,21 @@ common project-config
 library
   import:           base,project-config
   exposed-modules:
-    API.ApiResponse
-    API.Handlers
-    API.Routes
-    API.Server
-    CLI
-    DB.Database
-    DB.LineItemRepository
-    DB.UserRepository
-    Effects.Config
-    Effects.Error
-    Model.LineItem
-    Model.User
+    Polysemy.Log.Internal.LogConfig
+    Polysemy.Log.Internal.Logging
+    Polysemy.Log.Internal.LogMsg
+    Polysemy.Log.Logging
 
   build-depends:
     , aeson
-    , beam-core
-    , beam-migrate
-    , beam-sqlite           >=0.5.4.0 && <0.7
-    , bytestring
     , data-default
-    , optparse-applicative
+    , fast-logger
     , polysemy
-    , resource-pool
-    , servant-server
-    , sqlite-simple
-    , string-interpolate
-    , structured-logger
     , text
-    , wai-extra
-    , warp
+    , time
 
-  -- ----------- TODO --------------
-  -- ideally we want 0.7.0, however, that version is not currently available in nix
-  -- ----------- TODO --------------
+  -- , exceptions
+  -- , string-interpolate
   hs-source-dirs:   src/lib
   default-language: GHC2021
   ghc-options:
@@ -82,20 +63,26 @@ library
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
     -threaded -fno-warn-name-shadowing
 
-executable www
+executable structure-logging
   import:         base,project-config
   main-is:        Main.hs
 
   -- other-modules:
   -- other-extensions:
-  build-depends:  www
+  build-depends:
+    , aeson
+    , data-default
+    , polysemy
+    , structured-logger
+    , text
+
   hs-source-dirs: src/bin
   ghc-options:
     -Wall -Wcompat -Wincomplete-record-updates
     -Wincomplete-uni-patterns -Wredundant-constraints -Wunused-packages
     -threaded -fno-warn-name-shadowing -rtsopts -with-rtsopts=-N
 
-test-suite www-test
+test-suite structured-logging-test
   import:         base,project-config
 
   -- other-modules:
@@ -115,4 +102,4 @@ test-suite www-test
     , tasty
     , tasty-hspec
 
--- , www
+-- , structured-logger

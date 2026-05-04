@@ -16,6 +16,9 @@ module Effects.Config (
   Config (..),
   ConfigInput (..),
 
+  -- * LogConfiguration exported from `structured-logging`
+  LogConfig (..),
+
   -- * helper functions
   configToAppConfig,
   getPool,
@@ -35,7 +38,7 @@ import Data.Pool (Pool)
 import Data.Text (Text)
 import Database.SQLite.Simple (Connection)
 import GHC.Generics (Generic)
-import Log.LogLevel (LogLevel (..))
+import Polysemy.Log.Logging (LogConfig (..))
 
 newtype NetworkConfig = NetworkConfig
   { _networkPort :: Int
@@ -75,36 +78,32 @@ newtype DBConfig = DBConfig
 data AppConfig = AppConfig
   { _appDBConfig :: DBConfig
   , _appNetworkConfig :: NetworkConfig
-  , _appName :: AppName
-  , _appLogLevel :: LogLevel
+  , _appLogConfig :: LogConfig
   }
   deriving (Generic)
 
 data Config = Config
   { _configConnectionString :: ConnectionString
   , _configNetworkConfig :: NetworkConfig
-  , _configAppName :: AppName
-  , _configLogLevel :: LogLevel
+  , _configLogConfig :: LogConfig
   }
   deriving (Generic, Show)
 instance Default Config where
-  def = Config def def def def
+  def = Config def def def
 
 instance ToJSON Config where
   toJSON Config{..} =
     object
       [ "connectionString" .= _configConnectionString
       , "networkConfig" .= _configNetworkConfig
-      , "appName" .= _configAppName
-      , "logLevel" .= _configLogLevel
+      , "logConfig" .= _configLogConfig
       ]
 instance FromJSON Config where
   parseJSON = withObject "Config" $ \v ->
     Config
       <$> v .: "connectionString"
       <*> v .: "networkConfig"
-      <*> v .: "appName"
-      <*> v .: "logLevel"
+      <*> v .: "logConfig"
 
 configToAppConfig :: Config -> IO AppConfig
 configToAppConfig Config{..} = do
@@ -113,8 +112,7 @@ configToAppConfig Config{..} = do
     AppConfig
       { _appDBConfig = DBConfig pool
       , _appNetworkConfig = _configNetworkConfig
-      , _appName = _configAppName
-      , _appLogLevel = _configLogLevel
+      , _appLogConfig = _configLogConfig
       }
 
 data ConfigInput = ConfigInputFile FilePath | StdInput

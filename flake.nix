@@ -37,7 +37,8 @@
           hpkgs = pkgs.haskell.packages.ghc910.override {
             overrides = final: prev: {
               www-server = final.callCabal2nix "www-server" ./src/www { };
-              logger = final.callCabal2nix "logger" ./src/logger { };
+              # logger = final.callCabal2nix "logger" ./src/logger { };
+              structured-logger = final.callCabal2nix "logger" ./src/structured-logger { };
               all-project = final.callCabal2nix "all-project" ./. { };
             };
           };

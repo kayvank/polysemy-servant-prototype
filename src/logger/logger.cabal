@@ -48,6 +48,7 @@ library
     , aeson
     , bytestring
     , data-default
+    , fast-logger
     , polysemy
     , text
     , time

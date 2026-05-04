@@ -38,14 +38,14 @@ import DB.UserRepository (
  )
 import Data.String.Interpolate (i)
 import Effects.Error (AppError (..), throwDBError, throwNotFound)
-import Log.Logger (Logger)
 import Model.LineItem (LineItem, NewLineItem)
 import Model.User (NewUser, User)
 import Polysemy (Members, Sem)
 import Polysemy.Error (Error)
+import Polysemy.Log.Logging
 
-type IsLineItemHandler r = Members '[LineItemRepo, Logger, Error AppError] r
-type IsUserHandler r = Members '[UserRepository, Logger, Error AppError] r
+type IsLineItemHandler r = Members '[LineItemRepo, SLogger, Error AppError] r
+type IsUserHandler r = Members '[UserRepository, SLogger, Error AppError] r
 
 handleGetAllLineItem :: (IsLineItemHandler r) => Sem r (ApiResponse [LineItem])
 handleGetAllLineItem =
