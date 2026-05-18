@@ -45,6 +45,7 @@ library
     API.Handlers
     API.Routes
     API.Server
+    API.WebSockets
     CLI
     DB.Database
     DB.LineItemRepository
@@ -60,7 +61,9 @@ library
     , beam-migrate
     , beam-sqlite           >=0.5.4.0 && <0.7
     , bytestring
+    , conduit
     , data-default
+    , hedis
     , optparse-applicative
     , polysemy
     , resource-pool
@@ -69,8 +72,11 @@ library
     , string-interpolate
     , structured-logger
     , text
+    , wai
     , wai-extra
+    , wai-websockets
     , warp
+    , websockets
 
   -- ----------- TODO --------------
   -- ideally we want 0.7.0, however, that version is not currently available in nix
